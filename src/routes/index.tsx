@@ -41,7 +41,7 @@ function SplashPage() {
           <span className="text-4xl font-black">L</span>
         </div>
         <h1 className="text-5xl font-black tracking-tight drop-shadow-lg">LexBank</h1>
-        <p className="mt-3 text-lg font-medium text-white/90">Lex' Bank • Let's Bank</p>
+        <p className="mt-3 text-xl font-semibold tracking-wide text-white">Let's Bank</p>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
