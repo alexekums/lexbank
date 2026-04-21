@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import {
   ArrowDownLeft,
+  ArrowDownRight,
   ArrowUpRight,
   CheckCircle2,
   Repeat,
