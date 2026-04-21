@@ -3,7 +3,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowDownLeft, ArrowUpRight, Eye, EyeOff, Plus, Receipt, Smartphone, Wifi, Zap } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { formatNGN, formatUSD, mockBalances, mockTransactions } from "@/lib/mockData";
+import { formatNGN, formatUSD, mockTransactions } from "@/lib/mockData";
+import { useBalances } from "@/lib/balancesStore";
 
 export const Route = createFileRoute("/app/home")({
   head: () => ({ meta: [{ title: "Home — LexBank" }] }),
@@ -13,6 +14,12 @@ export const Route = createFileRoute("/app/home")({
 function HomePage() {
   const { user } = useAuth();
   const [show, setShow] = useState(true);
+  const balances = useBalances();
+  const cryptoUsd = balances.crypto.reduce((s, c) => s + c.amount * c.priceUsd, 0);
+  const tradingPnlNgn = balances.positions.reduce(
+    (s, p) => s + (p.pair.endsWith("NGN") ? p.pnl : p.pnl * 1613.3),
+    0,
+  );
 
   return (
     <div className="mx-auto max-w-md">
@@ -45,7 +52,7 @@ function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             className="mt-1 text-4xl font-black tracking-tight"
           >
-            {show ? formatNGN(mockBalances.ngn) : "₦••••••"}
+            {show ? formatNGN(balances.ngn) : "₦••••••"}
           </motion.p>
           <p className="mt-1 text-xs text-white/80">Account •• 4521 · Tap to copy</p>
         </div>
@@ -71,9 +78,9 @@ function HomePage() {
       {/* Multi-currency cards */}
       <section className="px-5 pt-5">
         <div className="grid grid-cols-3 gap-2">
-          <MiniCard label="USD" value={show ? formatUSD(mockBalances.usd) : "$••••"} accent="from-emerald-500 to-teal-500" />
-          <MiniCard label="Crypto" value={show ? formatUSD(mockBalances.cryptoUsd) : "$••••"} accent="from-amber-500 to-orange-500" />
-          <MiniCard label="P&L" value={show ? formatNGN(mockBalances.tradingPnl) : "₦••••"} accent="from-primary to-primary-glow" positive />
+          <MiniCard label="USD" value={show ? formatUSD(balances.usd) : "$••••"} accent="from-emerald-500 to-teal-500" />
+          <MiniCard label="Crypto" value={show ? formatUSD(cryptoUsd) : "$••••"} accent="from-amber-500 to-orange-500" />
+          <MiniCard label="P&L" value={show ? formatNGN(tradingPnlNgn) : "₦••••"} accent="from-primary to-primary-glow" positive={tradingPnlNgn >= 0} />
         </div>
       </section>
 
