@@ -46,6 +46,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
+  --color-primary-glow: var(--primary-glow);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -64,24 +65,29 @@
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.18 0.02 25);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.18 0.02 25);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.18 0.02 25);
+  --primary: oklch(0.645 0.235 25);
+  --primary-foreground: oklch(0.99 0 0);
+  --primary-glow: oklch(0.72 0.22 15);
+  --secondary: oklch(0.97 0.01 20);
+  --secondary-foreground: oklch(0.2 0.02 25);
+  --muted: oklch(0.97 0.005 20);
+  --muted-foreground: oklch(0.5 0.02 25);
+  --accent: oklch(0.96 0.03 20);
+  --accent-foreground: oklch(0.2 0.05 25);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --border: oklch(0.93 0.01 20);
+  --input: oklch(0.93 0.01 20);
+  --ring: oklch(0.645 0.235 25);
+  --gradient-primary: linear-gradient(135deg, oklch(0.645 0.235 25), oklch(0.72 0.22 15));
+  --gradient-primary-hover: linear-gradient(135deg, oklch(0.6 0.245 25), oklch(0.68 0.23 15));
+  --shadow-glow: 0 0 0 4px oklch(0.645 0.235 25 / 0.15);
+  --shadow-card: 0 10px 30px -12px oklch(0.645 0.235 25 / 0.18);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -140,5 +146,95 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 }
+
+/* ============== LexBank custom utilities ============== */
+@layer utilities {
+  .bg-gradient-primary {
+    background-image: var(--gradient-primary);
+  }
+  .text-gradient-primary {
+    background-image: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+}
+
+/* Premium shine animation for gradient buttons */
+@keyframes shine {
+  0% { transform: translateX(-150%) skewX(-20deg); }
+  100% { transform: translateX(250%) skewX(-20deg); }
+}
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: translateX(-150%) skewX(-20deg);
+  pointer-events: none;
+}
+.btn-shine:hover::after {
+  animation: shine 1s ease-out;
+}
+
+/* Floating label input */
+.float-field {
+  position: relative;
+}
+.float-field input {
+  width: 100%;
+  padding: 1.25rem 1rem 0.5rem 1rem;
+  font-size: 0.95rem;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 0.75rem;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.float-field input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px oklch(0.645 0.235 25 / 0.18);
+}
+.float-field label {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+  pointer-events: none;
+  transition: all .2s ease;
+  font-size: 0.95rem;
+  background: transparent;
+}
+.float-field input:focus + label,
+.float-field input:not(:placeholder-shown) + label {
+  top: 0.55rem;
+  transform: translateY(0);
+  font-size: 0.7rem;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Subtle pulse for live elements */
+@keyframes soft-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.animate-soft-pulse { animation: soft-pulse 1.6s ease-in-out infinite; }
