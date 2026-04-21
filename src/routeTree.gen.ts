@@ -10,11 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppTransfersRouteImport } from './routes/app.transfers'
+import { Route as AppMoreRouteImport } from './routes/app.more'
+import { Route as AppLextxRouteImport } from './routes/app.lextx'
+import { Route as AppHomeRouteImport } from './routes/app.home'
+import { Route as AppAiRouteImport } from './routes/app.ai'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,30 +33,99 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppTransfersRoute = AppTransfersRouteImport.update({
+  id: '/transfers',
+  path: '/transfers',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMoreRoute = AppMoreRouteImport.update({
+  id: '/more',
+  path: '/more',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLextxRoute = AppLextxRouteImport.update({
+  id: '/lextx',
+  path: '/lextx',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHomeRoute = AppHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAiRoute = AppAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/app/ai': typeof AppAiRoute
+  '/app/home': typeof AppHomeRoute
+  '/app/lextx': typeof AppLextxRoute
+  '/app/more': typeof AppMoreRoute
+  '/app/transfers': typeof AppTransfersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/app/ai': typeof AppAiRoute
+  '/app/home': typeof AppHomeRoute
+  '/app/lextx': typeof AppLextxRoute
+  '/app/more': typeof AppMoreRoute
+  '/app/transfers': typeof AppTransfersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/app/ai': typeof AppAiRoute
+  '/app/home': typeof AppHomeRoute
+  '/app/lextx': typeof AppLextxRoute
+  '/app/more': typeof AppMoreRoute
+  '/app/transfers': typeof AppTransfersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/app/ai'
+    | '/app/home'
+    | '/app/lextx'
+    | '/app/more'
+    | '/app/transfers'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login'
-  id: '__root__' | '/' | '/login'
+  to:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/app/ai'
+    | '/app/home'
+    | '/app/lextx'
+    | '/app/more'
+    | '/app/transfers'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/login'
+    | '/app/ai'
+    | '/app/home'
+    | '/app/lextx'
+    | '/app/more'
+    | '/app/transfers'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
 }
 
@@ -58,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -65,11 +152,65 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/transfers': {
+      id: '/app/transfers'
+      path: '/transfers'
+      fullPath: '/app/transfers'
+      preLoaderRoute: typeof AppTransfersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/more': {
+      id: '/app/more'
+      path: '/more'
+      fullPath: '/app/more'
+      preLoaderRoute: typeof AppMoreRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/lextx': {
+      id: '/app/lextx'
+      path: '/lextx'
+      fullPath: '/app/lextx'
+      preLoaderRoute: typeof AppLextxRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/home': {
+      id: '/app/home'
+      path: '/home'
+      fullPath: '/app/home'
+      preLoaderRoute: typeof AppHomeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/ai': {
+      id: '/app/ai'
+      path: '/ai'
+      fullPath: '/app/ai'
+      preLoaderRoute: typeof AppAiRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAiRoute: typeof AppAiRoute
+  AppHomeRoute: typeof AppHomeRoute
+  AppLextxRoute: typeof AppLextxRoute
+  AppMoreRoute: typeof AppMoreRoute
+  AppTransfersRoute: typeof AppTransfersRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAiRoute: AppAiRoute,
+  AppHomeRoute: AppHomeRoute,
+  AppLextxRoute: AppLextxRoute,
+  AppMoreRoute: AppMoreRoute,
+  AppTransfersRoute: AppTransfersRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
