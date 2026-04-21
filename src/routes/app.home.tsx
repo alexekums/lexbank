@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowDownLeft, ArrowUpRight, Eye, EyeOff, Plus, Receipt, Smartphone, Wifi, Zap } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { formatNGN, formatUSD, mockBalances, mockTransactions } from "@/lib/mockData";
+import { formatNGN, formatUSD, mockTransactions } from "@/lib/mockData";
 import { useBalances } from "@/lib/balancesStore";
 
 export const Route = createFileRoute("/app/home")({
