@@ -73,6 +73,9 @@ export const mockBalances = {
   tradingPnl: 20955,
 };
 
+// Approximate USD→NGN reference rate used for in-app conversions
+export const USD_NGN_RATE = 1613.3;
+
 export interface ChatMessage {
   id: string;
   role: "user" | "ai";
