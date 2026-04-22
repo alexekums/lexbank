@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Home, LineChart, MessageCircle, ArrowLeftRight, MoreHorizontal } from "lucide-react";
+import { Home, LineChart, MessageCircle, ArrowLeftRight, MoreHorizontal, CreditCard } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ const tabs = [
   { to: "/app/home", label: "Home", icon: Home },
   { to: "/app/lextx", label: "LexTX", icon: LineChart },
   { to: "/app/transfers", label: "Transfers", icon: ArrowLeftRight },
+  { to: "/app/cards", label: "Cards", icon: CreditCard },
   { to: "/app/more", label: "More", icon: MoreHorizontal },
 ] as const;
 
@@ -40,7 +41,7 @@ function AppShell() {
 
       <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md px-3 pb-3">
         <div className="rounded-2xl border border-rose-100 bg-white/95 px-2 py-2 shadow-card backdrop-blur-xl">
-          <ul className="grid grid-cols-4 gap-1">
+          <ul className="grid grid-cols-5 gap-1">
             {tabs.map((t) => {
               const Icon = t.icon;
               const active = pathname === t.to || pathname.startsWith(t.to + "/");
