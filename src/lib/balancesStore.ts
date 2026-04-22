@@ -81,14 +81,16 @@ export const balancesActions = {
   closePosition(id: string, rateUsdNgn: number) {
     const pos = state.positions.find((p) => p.id === id);
     if (!pos) return 0;
-    const ngnGained = pos.pnl > 0 ? (pos.pair.endsWith("NGN") ? pos.pnl : pos.pnl * rateUsdNgn) : 0;
+    const pnlNgn = pos.pair.endsWith("NGN") ? pos.pnl : pos.pnl * rateUsdNgn;
+    const returnedToTrading = Math.max(0, pos.marginNgn + pnlNgn);
     state = {
       ...state,
-      ngn: state.ngn + ngnGained,
+      tradingNgn: state.tradingNgn + returnedToTrading,
       positions: state.positions.filter((p) => p.id !== id),
+      closedPositions: [{ ...pos, pnl: +pos.pnl.toFixed(2) }, ...state.closedPositions],
     };
     emit();
-    return ngnGained;
+    return returnedToTrading;
   },
   tickPositions(prices: Record<string, number>) {
     state = {
