@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { Home, LineChart, MessageCircle, ArrowLeftRight, MoreHorizontal, CreditCard } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Home, LineChart, MessageCircle, ArrowLeftRight, MoreHorizontal, CreditCard, Minus } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +20,7 @@ function AppShell() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [aiMinimized, setAiMinimized] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -27,17 +28,37 @@ function AppShell() {
 
   if (!user) return null;
 
+  const showAiButton = pathname !== "/app/ai";
+
   return (
     <div className="min-h-screen bg-rose-50/40 pb-24">
       <Outlet />
 
-      <Link
-        to="/app/ai"
-        aria-label="Open Lexi AI chat"
-        className="fixed bottom-24 right-[max(1rem,calc((100vw-28rem)/2+1rem))] z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-[0_12px_32px_-8px_color-mix(in_oklab,var(--primary)_70%,transparent)] ring-1 ring-white/40 transition active:scale-95"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </Link>
+      {showAiButton && (
+        <div className="fixed bottom-24 right-[max(0.75rem,calc((100vw-28rem)/2+0.75rem))] z-40 flex items-center gap-2">
+          {!aiMinimized && (
+            <button
+              type="button"
+              onClick={() => setAiMinimized(true)}
+              aria-label="Minimize AI assistant"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-card text-primary shadow-card ring-1 ring-border transition active:scale-95"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+          )}
+          <Link
+            to="/app/ai"
+            aria-label="Open Lexi AI chat"
+            className={cn(
+              "flex items-center justify-center bg-gradient-primary text-primary-foreground shadow-[0_12px_32px_-8px_color-mix(in_oklab,var(--primary)_70%,transparent)] ring-1 ring-white/40 transition active:scale-95",
+              aiMinimized ? "h-10 w-10 rounded-full text-xs font-black" : "h-14 gap-2 rounded-full px-4 text-sm font-black",
+            )}
+            onClick={() => setAiMinimized(true)}
+          >
+            {aiMinimized ? "AI" : <><MessageCircle className="h-5 w-5" /> Lexi</>}
+          </Link>
+        </div>
+      )}
 
       <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md px-3 pb-3">
         <div className="rounded-2xl border border-rose-100 bg-white/95 px-2 py-2 shadow-card backdrop-blur-xl">
