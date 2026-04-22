@@ -32,7 +32,7 @@ function HomePage() {
             </div>
             <div>
               <p className="text-xs text-white/80">Hi {user?.name?.split(" ")[0] ?? "there"} 👋</p>
-              <p className="text-sm font-semibold">Lex' Bank • Let's Bank</p>
+              <p className="text-sm font-semibold uppercase tracking-wide">LET'S BANK</p>
             </div>
           </div>
           <button

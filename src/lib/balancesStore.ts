@@ -4,15 +4,19 @@ import { mockBalances, mockCrypto, mockPositions, type CryptoHolding, type OpenP
 type State = {
   ngn: number;
   usd: number;
+  tradingNgn: number;
   crypto: CryptoHolding[];
   positions: OpenPosition[];
+  closedPositions: OpenPosition[];
 };
 
 let state: State = {
   ngn: mockBalances.ngn,
   usd: mockBalances.usd,
+  tradingNgn: mockBalances.tradingNgn,
   crypto: mockCrypto.map((c) => ({ ...c })),
   positions: mockPositions.map((p) => ({ ...p })),
+  closedPositions: [],
 };
 
 const listeners = new Set<() => void>();
@@ -30,6 +34,20 @@ export const balancesActions = {
     state = { ...state, ngn: Math.max(0, state.ngn + delta) };
     emit();
   },
+  moveToTrading(amount: number) {
+    const value = Math.min(Math.max(0, amount), state.ngn);
+    if (value <= 0) return 0;
+    state = { ...state, ngn: state.ngn - value, tradingNgn: state.tradingNgn + value };
+    emit();
+    return value;
+  },
+  withdrawTradingBalance(amount: number) {
+    const value = Math.min(Math.max(0, amount), state.tradingNgn);
+    if (value <= 0) return 0;
+    state = { ...state, ngn: state.ngn + value, tradingNgn: state.tradingNgn - value };
+    emit();
+    return value;
+  },
   convertCryptoToNgn(symbol: string, cryptoAmount: number, rateUsdNgn: number) {
     const holding = state.crypto.find((c) => c.symbol === symbol);
     if (!holding) return 0;
@@ -43,46 +61,36 @@ export const balancesActions = {
     emit();
     return ngnGained;
   },
-  withdrawTradingPnl(rateUsdNgn: number) {
-    // Sum positive P&L (NGN-denominated for NGN pairs, USD otherwise) → convert to NGN
-    let totalNgn = 0;
-    state.positions.forEach((p) => {
-      if (p.pnl > 0) {
-        totalNgn += p.pair.endsWith("NGN") ? p.pnl : p.pnl * rateUsdNgn;
-      }
-    });
-    if (totalNgn <= 0) return 0;
-    state = {
-      ...state,
-      ngn: state.ngn + totalNgn,
-      positions: state.positions.map((p) => (p.pnl > 0 ? { ...p, pnl: 0 } : p)),
-    };
-    emit();
-    return totalNgn;
-  },
-  openPosition(pair: string, side: "BUY" | "SELL", lots: number, entry: number) {
+  openPosition(pair: string, side: "BUY" | "SELL", lots: number, entry: number, leverage: number, marginNgn: number) {
+    const margin = Math.min(Math.max(0, marginNgn), state.tradingNgn);
+    if (margin <= 0) return false;
     const pos: OpenPosition = {
       id: `p_${Date.now()}`,
       pair,
       side,
       lots,
       entry,
+      leverage,
+      marginNgn: margin,
       pnl: 0,
     };
-    state = { ...state, positions: [pos, ...state.positions] };
+    state = { ...state, tradingNgn: state.tradingNgn - margin, positions: [pos, ...state.positions] };
     emit();
+    return true;
   },
   closePosition(id: string, rateUsdNgn: number) {
     const pos = state.positions.find((p) => p.id === id);
     if (!pos) return 0;
-    const ngnGained = pos.pnl > 0 ? (pos.pair.endsWith("NGN") ? pos.pnl : pos.pnl * rateUsdNgn) : 0;
+    const pnlNgn = pos.pair.endsWith("NGN") ? pos.pnl : pos.pnl * rateUsdNgn;
+    const returnedToTrading = Math.max(0, pos.marginNgn + pnlNgn);
     state = {
       ...state,
-      ngn: state.ngn + ngnGained,
+      tradingNgn: state.tradingNgn + returnedToTrading,
       positions: state.positions.filter((p) => p.id !== id),
+      closedPositions: [{ ...pos, pnl: +pos.pnl.toFixed(2) }, ...state.closedPositions],
     };
     emit();
-    return ngnGained;
+    return returnedToTrading;
   },
   tickPositions(prices: Record<string, number>) {
     state = {

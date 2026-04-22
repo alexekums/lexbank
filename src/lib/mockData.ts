@@ -58,17 +58,20 @@ export interface OpenPosition {
   side: "BUY" | "SELL";
   lots: number;
   entry: number;
+  leverage: number;
+  marginNgn: number;
   pnl: number;
 }
 
 export const mockPositions: OpenPosition[] = [
-  { id: "p1", pair: "USD/NGN", side: "BUY", lots: 0.5, entry: 1608.20, pnl: 21000 },
-  { id: "p2", pair: "EUR/USD", side: "SELL", lots: 0.2, entry: 1.0860, pnl: -45 },
+  { id: "p1", pair: "USD/NGN", side: "BUY", lots: 0.5, entry: 1608.20, leverage: 100, marginNgn: 80410, pnl: 21000 },
+  { id: "p2", pair: "EUR/USD", side: "SELL", lots: 0.2, entry: 1.0860, leverage: 100, marginNgn: 35000, pnl: -45 },
 ];
 
 export const mockBalances = {
   ngn: 1284530.75,
   usd: 1840.22,
+  tradingNgn: 250000,
   cryptoUsd: 0.0421 * 67890 + 0.812 * 3520 + 1240.5,
   tradingPnl: 20955,
 };
