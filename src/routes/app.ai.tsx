@@ -18,6 +18,20 @@ const suggestions = [
 
 function fakeReply(msg: string): string {
   const m = msg.toLowerCase();
+  const amount = m.match(/(?:₦|ngn|n)?\s*([0-9][0-9,]*)/i)?.[1]?.replace(/,/g, "");
+  const naira = amount ? `₦${Number(amount).toLocaleString()}` : "that spend";
+  if (m.includes("calendar") || m.includes("news") || m.includes("cpi") || m.includes("nfp") || m.includes("rate decision")) {
+    return "Forex brief: watch US CPI, Non-Farm Payrolls, FOMC rate guidance, crude oil prices, and CBN policy headlines. High-impact windows can widen spreads, so reduce leverage, wait for confirmation, and protect open USD/NGN or EUR/USD trades with stops.";
+  }
+  if (m.includes("airtime") || m.includes("data") || m.includes("mtn") || m.includes("glo") || m.includes("airtel")) {
+    return `Categorized ${naira} as Data & Airtime. You’re tracking above your usual monthly pace, so I’d set a weekly bundle cap and move repeat top-ups into a planned bill pocket.`;
+  }
+  if (m.includes("food") || m.includes("restaurant") || m.includes("lunch") || m.includes("uber") || m.includes("bolt")) {
+    return `Categorized ${naira} as Lifestyle & Transport. This category is best controlled with daily limits; consider keeping weekday rides and eating out under one fixed allowance.`;
+  }
+  if (m.includes("rent") || m.includes("school") || m.includes("fee") || m.includes("electricity") || m.includes("bill")) {
+    return `Categorized ${naira} as Essential Bills. Your essentials look predictable, so I suggest scheduling this payment and keeping at least 1.5× the bill amount as buffer.`;
+  }
   if (m.includes("airtime") || m.includes("data")) {
     return "You've spent ₦45,800 on airtime & internet this month — categorized under Data & Airtime. That's about 18% more than last month. Want me to suggest a cheaper bundle?";
   }
