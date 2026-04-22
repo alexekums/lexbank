@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
-import { ArrowLeftRight, CheckCircle2, Clock, Landmark, Phone, Repeat, Users, Zap } from "lucide-react";
+import { ArrowLeftRight, CheckCircle2, Clock, Landmark, Phone, Repeat, Users, Zap, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatNGN } from "@/lib/mockData";
+import { balancesActions, useBalances } from "@/lib/balancesStore";
+import { transactionsActions } from "@/lib/transactionsStore";
 
 export const Route = createFileRoute("/app/transfers")({
   head: () => ({ meta: [{ title: "Transfers — LexBank" }] }),
@@ -17,25 +19,39 @@ const beneficiaries = [
 ];
 
 const banks = ["GTBank", "Zenith Bank", "Access Bank", "FirstBank", "UBA", "Fidelity Bank", "Stanbic IBTC", "Sterling Bank"];
+const sameBanks = ["LexBank", "Kuda", "Opay", "PalmPay", "Moniepoint"];
 const mockNames = ["TUNDE ADEBAYO", "AMAKA OKORO", "CHINEDU NWOSU", "AISHA BELLO", "KELVIN EZE"];
 
+type Mode = "other" | "same" | "schedule" | "phone" | "recurring";
+
 function TransfersPage() {
+  const balances = useBalances();
   const [amount, setAmount] = useState("");
   const [account, setAccount] = useState("");
+  const [phone, setPhone] = useState("");
+  const [mode, setMode] = useState<Mode>("other");
   const [bank, setBank] = useState(banks[0]);
+  const [sameBank, setSameBank] = useState(sameBanks[0]);
 
+  const activeBank = mode === "same" ? sameBank : bank;
   const accountName = useMemo(() => {
-    const digits = account.replace(/\D/g, "");
-    if (digits.length < 10) return "";
+    const digits = (mode === "phone" ? phone : account).replace(/\D/g, "");
+    if (digits.length < (mode === "phone" ? 11 : 10)) return "";
     return mockNames[Number(digits.slice(-2)) % mockNames.length];
-  }, [account]);
+  }, [account, mode, phone]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const n = Number(amount);
-    if (!n || account.replace(/\D/g, "").length < 10 || !bank || !accountName) return toast.error("Enter valid transfer details");
-    toast.success(`Sent ${formatNGN(n)} to ${accountName}`, { description: `${bank} •• ${account.slice(-4)}` });
-    setAmount(""); setAccount("");
+    const digits = (mode === "phone" ? phone : account).replace(/\D/g, "");
+    if (!n || digits.length < (mode === "phone" ? 11 : 10) || !accountName) return toast.error("Enter valid transfer details");
+    if (n > balances.ngn) return toast.error("Insufficient Spend Balance");
+    balancesActions.addNgn(-n);
+    transactionsActions.add({ title: `Transfer to ${accountName}`, category: mode === "same" ? "Same-bank transfer" : "Transfer", amount: -n, icon: mode === "same" ? "🏦" : "↗️" });
+    toast.success(mode === "schedule" ? "Transfer scheduled" : `Sent ${formatNGN(n)} to ${accountName}`, { description: `${activeBank} •• ${digits.slice(-4)}` });
+    setAmount("");
+    setAccount("");
+    setPhone("");
   };
 
   return (
@@ -45,19 +61,17 @@ function TransfersPage() {
         <p className="mt-1 text-sm text-white/85">Send money to LexBank and major Nigerian banks.</p>
       </header>
 
-      <section className="grid grid-cols-4 gap-3 px-5 pt-5">
+      <section className="grid grid-cols-5 gap-2 px-5 pt-5">
         {[
-          { icon: Zap, label: "Instant" },
-          { icon: Clock, label: "Schedule" },
-          { icon: Phone, label: "To phone" },
-          { icon: Repeat, label: "Recurring" },
+          { icon: Building2, label: "Same", value: "same" as const },
+          { icon: Zap, label: "Instant", value: "other" as const },
+          { icon: Clock, label: "Schedule", value: "schedule" as const },
+          { icon: Phone, label: "Phone", value: "phone" as const },
+          { icon: Repeat, label: "Repeat", value: "recurring" as const },
         ].map((q) => (
-          <button
-            key={q.label}
-            className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 text-xs font-medium shadow-sm ring-1 ring-rose-100 transition hover:-translate-y-0.5 hover:shadow-card"
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-primary">
-              <q.icon className="h-5 w-5" />
+          <button key={q.label} onClick={() => setMode(q.value)} className={`flex flex-col items-center gap-2 rounded-2xl p-2.5 text-[11px] font-medium shadow-sm ring-1 transition active:scale-95 ${mode === q.value ? "bg-gradient-primary text-white ring-primary" : "bg-white ring-rose-100"}`}>
+            <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${mode === q.value ? "bg-white/15" : "bg-rose-50 text-primary"}`}>
+              <q.icon className="h-4 w-4" />
             </span>
             {q.label}
           </button>
@@ -72,7 +86,7 @@ function TransfersPage() {
         <ul className="flex gap-3 overflow-x-auto pb-2">
           {beneficiaries.map((b) => (
             <li key={b.id} className="flex w-16 flex-shrink-0 flex-col items-center gap-1.5">
-              <button className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-sm font-bold text-white shadow-card transition active:scale-95">
+              <button onClick={() => { setMode(b.bank === "LexBank" ? "same" : "other"); setAccount("0123456789"); }} className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-sm font-bold text-white shadow-card transition active:scale-95">
                 {b.initials}
               </button>
               <p className="truncate text-[11px] font-medium">{b.name}</p>
@@ -85,34 +99,25 @@ function TransfersPage() {
       <section className="px-5 pt-4">
         <form onSubmit={submit} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-rose-100">
           <div className="mb-3 flex items-center gap-2">
-            <ArrowLeftRight className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-bold tracking-tight">New transfer</h2>
+            {mode === "same" ? <Building2 className="h-4 w-4 text-primary" /> : <ArrowLeftRight className="h-4 w-4 text-primary" />}
+            <h2 className="text-sm font-bold tracking-tight">{mode === "same" ? "Same-bank transfer" : "New transfer"}</h2>
           </div>
 
           <div className="space-y-3">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Bank</label>
-            <select value={bank} onChange={(e) => setBank(e.target.value)} className="h-12 w-full rounded-xl border border-border bg-white px-3 text-sm font-semibold outline-none transition focus:border-primary focus:shadow-glow">
-              {banks.map((b) => <option key={b} value={b}>{b}</option>)}
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{mode === "same" ? "Same-bank network" : "Bank"}</label>
+            <select value={mode === "same" ? sameBank : bank} onChange={(e) => mode === "same" ? setSameBank(e.target.value) : setBank(e.target.value)} className="h-12 w-full rounded-xl border border-border bg-white px-3 text-sm font-semibold outline-none transition focus:border-primary focus:shadow-glow">
+              {(mode === "same" ? sameBanks : banks).map((b) => <option key={b} value={b}>{b}</option>)}
             </select>
-            <div className="float-field">
-              <input type="text" inputMode="numeric" placeholder=" " value={amount} onChange={(e) => setAmount(e.target.value)} />
-              <label>Amount (₦)</label>
-            </div>
-            <div className="float-field">
-              <input type="text" inputMode="numeric" maxLength={10} placeholder=" " value={account} onChange={(e) => setAccount(e.target.value.replace(/\D/g, ""))} />
-              <label>Account number</label>
-            </div>
+            <div className="float-field"><input type="text" inputMode="numeric" placeholder=" " value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} /><label>Amount (₦)</label></div>
+            <div className="float-field"><input type="text" inputMode="numeric" maxLength={mode === "phone" ? 11 : 10} placeholder=" " value={mode === "phone" ? phone : account} onChange={(e) => mode === "phone" ? setPhone(e.target.value.replace(/\D/g, "")) : setAccount(e.target.value.replace(/\D/g, ""))} /><label>{mode === "phone" ? "Phone number" : "Account number"}</label></div>
             <div className="min-h-14 rounded-xl bg-rose-50 p-3 ring-1 ring-rose-100">
               {accountName ? <div className="flex items-center gap-2 text-sm font-black text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500" />{accountName}</div> : <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground"><Landmark className="h-4 w-4 text-primary" />Account name appears automatically</div>}
-              <p className="mt-1 text-[11px] text-muted-foreground">Mock name enquiry · {bank}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">Mock name enquiry · {activeBank}</p>
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="btn-shine mt-5 inline-flex h-12 w-full items-center justify-center rounded-xl bg-gradient-primary text-base font-semibold text-white shadow-card transition active:scale-[0.98]"
-          >
-            Send money
+          <button type="submit" className="btn-shine mt-5 inline-flex h-12 w-full items-center justify-center rounded-xl bg-gradient-primary text-base font-semibold text-white shadow-card transition active:scale-[0.98]">
+            {mode === "schedule" ? "Schedule transfer" : "Send money"}
           </button>
         </form>
       </section>
