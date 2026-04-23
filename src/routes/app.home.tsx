@@ -74,7 +74,7 @@ function HomePage() {
             </div>
             <div>
               <p className="text-xs text-white/80">Hi {user?.name?.split(" ")[0] ?? "there"} 👋</p>
-              <p className="text-sm font-semibold uppercase tracking-wide">LET'S BANK</p>
+              <p className="text-sm font-semibold tracking-wide">let's bank</p>
             </div>
           </div>
           <button

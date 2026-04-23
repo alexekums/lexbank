@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LexBank — Lex' Bank • Let's Bank" },
+      { title: "LexBank — let's bank" },
       { name: "description", content: "LexBank: premium Nigerian banking powered by LexTX. Naira, USD, crypto and forex in one app." },
     ],
   }),
@@ -41,7 +41,7 @@ function SplashPage() {
           <span className="text-4xl font-black">L</span>
         </div>
         <h1 className="text-5xl font-black tracking-tight drop-shadow-lg">LexBank</h1>
-        <p className="mt-3 text-xl font-semibold tracking-wide text-white">Let's Bank</p>
+        <p className="mt-3 text-xl font-semibold tracking-wide text-white">let's bank</p>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
-import { CreditCard, MapPin, Phone, Plus, ShieldCheck, Sparkles } from "lucide-react";
+import { CreditCard, Globe2, Lock, MapPin, Phone, Plus, ShieldCheck, Snowflake, Sparkles, WalletCards } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { formatNGN } from "@/lib/mockData";
@@ -17,6 +17,9 @@ type VirtualCard = {
   balance: number;
   created: string;
   history: { id: string; title: string; amount: number; date: string }[];
+  frozen: boolean;
+  spendingLimit: number;
+  internationalBlocked: boolean;
 };
 
 const starterCards: VirtualCard[] = [
@@ -26,6 +29,9 @@ const starterCards: VirtualCard[] = [
     number: "5321 8840 1294 7712",
     balance: 185000,
     created: "Apr 2026",
+    frozen: false,
+    spendingLimit: 250000,
+    internationalBlocked: true,
     history: [
       { id: "h1", title: "Netflix", amount: -6500, date: "Today" },
       { id: "h2", title: "Card top up", amount: 50000, date: "Yesterday" },
@@ -37,6 +43,7 @@ function CardsPage() {
   const [cards, setCards] = useState<VirtualCard[]>(starterCards);
   const [label, setLabel] = useState("");
   const [funding, setFunding] = useState("50000");
+  const [limit, setLimit] = useState("250000");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const active = cards[0];
@@ -54,12 +61,20 @@ function CardsPage() {
       number: `5321 8840 ${tail} ${String(Math.floor(1000 + Math.random() * 8999))}`,
       balance: amount,
       created: "New",
+      frozen: false,
+      spendingLimit: amount,
+      internationalBlocked: true,
       history: [{ id: `h_${Date.now()}`, title: "Initial funding", amount, date: "Just now" }],
     };
     setCards((prev) => [card, ...prev]);
     setLabel("");
     setFunding("50000");
     toast.success("Virtual card created", { description: `${card.name} is ready to use` });
+  };
+
+  const updateActiveCard = (patch: Partial<VirtualCard>) => {
+    if (!active) return;
+    setCards((prev) => prev.map((card) => card.id === active.id ? { ...card, ...patch } : card));
   };
 
   const requestPhysicalCard = (e: FormEvent) => {
@@ -107,6 +122,21 @@ function CardsPage() {
               </div>
             </div>
           </motion.section>
+        )}
+
+        {active && (
+          <section className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+            <div className="mb-3 flex items-center gap-2"><WalletCards className="h-4 w-4 text-primary" /><h2 className="text-sm font-black">Card control</h2></div>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => { updateActiveCard({ frozen: !active.frozen }); toast.success(active.frozen ? "Card unfrozen" : "Card frozen"); }} className="rounded-xl bg-secondary p-3 text-left text-xs font-black ring-1 ring-border"><Snowflake className="mb-2 h-4 w-4 text-primary" />{active.frozen ? "Unfreeze card" : "Freeze card"}<p className="mt-1 font-medium text-muted-foreground">{active.frozen ? "Card is paused" : "Pause instantly"}</p></button>
+              <button onClick={() => { updateActiveCard({ internationalBlocked: !active.internationalBlocked }); toast.success(active.internationalBlocked ? "International enabled" : "International blocked"); }} className="rounded-xl bg-secondary p-3 text-left text-xs font-black ring-1 ring-border"><Globe2 className="mb-2 h-4 w-4 text-primary" />International<p className="mt-1 font-medium text-muted-foreground">{active.internationalBlocked ? "Blocked" : "Allowed"}</p></button>
+            </div>
+            <form onSubmit={(e) => { e.preventDefault(); const next = Number(limit); if (next < 1000) return toast.error("Enter a valid limit"); updateActiveCard({ spendingLimit: next }); toast.success("Spending limit updated"); }} className="mt-3 flex gap-2">
+              <div className="float-field flex-1"><input value={limit} onChange={(e) => setLimit(e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder=" " /><label>Spending limit</label></div>
+              <button className="h-14 rounded-xl bg-gradient-primary px-4 text-xs font-black text-primary-foreground shadow-card"><Lock className="mr-1 inline h-3.5 w-3.5" />Set</button>
+            </form>
+            <p className="mt-2 text-[11px] text-muted-foreground">Current limit: {formatNGN(active.spendingLimit)}</p>
+          </section>
         )}
 
         <form onSubmit={createCard} className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">

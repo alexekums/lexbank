@@ -11,6 +11,7 @@ interface AuthCtx {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
+  updateUser: (patch: Partial<Pick<LexUser, "name" | "email">>) => void;
   logout: () => void;
 }
 
@@ -50,8 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => persist(null);
+  const updateUser: AuthCtx["updateUser"] = (patch) => {
+    if (!user) return;
+    persist({ ...user, ...patch });
+  };
 
-  return <Ctx.Provider value={{ user, loading, login, signup, logout }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ user, loading, login, signup, updateUser, logout }}>{children}</Ctx.Provider>;
 }
 
 export function useAuth() {

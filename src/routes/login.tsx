@@ -9,7 +9,7 @@ export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
       { title: "Sign in — LexBank" },
-      { name: "description", content: "Welcome back to LexBank. Lex' Bank • Let's Bank." },
+      { name: "description", content: "Welcome back to LexBank. let's bank." },
     ],
   }),
   component: LoginPage,
@@ -71,7 +71,7 @@ function LoginPage() {
           <div>
             <p className="text-base font-extrabold tracking-tight">LexBank</p>
             <p className="-mt-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-              Lex' Bank • Let's Bank
+              let's bank
             </p>
           </div>
         </div>
