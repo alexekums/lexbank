@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Bell, Camera, ChevronRight, CreditCard, Fingerprint, HelpCircle, KeyRound, Lock, LogOut, Settings, Shield, Sparkles, User } from "lucide-react";
+import { Bell, Camera, CreditCard, Fingerprint, HeartPulse, HelpCircle, KeyRound, Lock, LogOut, Settings, Shield, Sparkles, TrendingUp, Umbrella, User } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -34,6 +34,14 @@ const groups: Array<{ title: string; items: { icon: typeof User; label: string; 
     ],
   },
 ];
+
+const investments = [
+  { name: "Mutual Funds", returns: "15.8% p.a.", note: "Balanced naira fund" },
+  { name: "Treasury Bills", returns: "18.2% p.a.", note: "Low-risk government bills" },
+  { name: "Fixed Deposits", returns: "16.5% p.a.", note: "Lock funds for 90–365 days" },
+];
+
+const insurance = ["Health", "Gadget", "Life", "Travel"];
 
 function MorePage() {
   const { user, logout, updateUser } = useAuth();
@@ -119,6 +127,20 @@ function MorePage() {
           <div className="space-y-3"><ToggleRow icon={Sparkles} label="Dark Mode" active={darkMode} onClick={() => setDarkMode((v) => !v)} /><ToggleRow icon={Fingerprint} label="2FA" active={twoFa} onClick={() => setTwoFa((v) => !v)} /></div>
           <form onSubmit={updatePassword} className="mt-4 space-y-3"><div className="float-field"><input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder=" " /><label>New password</label></div><button className="h-10 w-full rounded-xl bg-secondary text-xs font-black text-primary"><KeyRound className="mr-1 inline h-3.5 w-3.5" />Change Password</button></form>
           <form onSubmit={updatePin} className="mt-3 space-y-3"><div className="float-field"><input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} inputMode="numeric" placeholder=" " /><label>Transaction PIN</label></div><button className="h-10 w-full rounded-xl bg-secondary text-xs font-black text-primary"><Lock className="mr-1 inline h-3.5 w-3.5" />Update PIN</button></form>
+        </section>
+
+        <section className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+          <div className="mb-3 flex items-center gap-2"><TrendingUp className="h-4 w-4 text-primary" /><h2 className="text-sm font-black">Investments</h2></div>
+          <div className="space-y-2">
+            {investments.map((product) => <div key={product.name} className="flex items-center justify-between gap-3 rounded-xl bg-secondary p-3 ring-1 ring-border"><div><p className="text-sm font-black">{product.name}</p><p className="text-[11px] text-muted-foreground">{product.note} · {product.returns}</p></div><button onClick={() => toast.success(`${product.name} investment started`, { description: `Simulated return ${product.returns}` })} className="rounded-xl bg-gradient-primary px-3 py-2 text-[11px] font-black text-primary-foreground">Invest Now</button></div>)}
+          </div>
+        </section>
+
+        <section className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+          <div className="mb-3 flex items-center gap-2"><Umbrella className="h-4 w-4 text-primary" /><h2 className="text-sm font-black">Microinsurance</h2></div>
+          <div className="grid grid-cols-2 gap-2">
+            {insurance.map((plan) => <button key={plan} onClick={() => toast.success(`${plan} cover selected`, { description: "Demo policy quote generated" })} className="rounded-xl bg-secondary p-3 text-left text-xs font-black ring-1 ring-border"><HeartPulse className="mb-2 h-4 w-4 text-primary" />{plan}<p className="mt-1 font-medium text-muted-foreground">From ₦500/month</p></button>)}
+          </div>
         </section>
 
         <button
