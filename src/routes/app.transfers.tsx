@@ -101,16 +101,14 @@ function TransfersPage() {
         <form onSubmit={submit} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-rose-100">
           <div className="mb-3 flex items-center gap-2">
             {mode === "same" ? <Building2 className="h-4 w-4 text-primary" /> : <ArrowLeftRight className="h-4 w-4 text-primary" />}
-            <h2 className="text-sm font-bold tracking-tight">{mode === "same" ? "Same-bank transfer" : "New transfer"}</h2>
+            <h2 className="text-sm font-bold tracking-tight">{mode === "same" ? "let's bank Internal Transfer" : "Other bank transfer"}</h2>
           </div>
 
           <div className="space-y-3">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{mode === "same" ? "Same-bank network" : "Bank"}</label>
-            <select value={mode === "same" ? sameBank : bank} onChange={(e) => mode === "same" ? setSameBank(e.target.value) : setBank(e.target.value)} className="h-12 w-full rounded-xl border border-border bg-white px-3 text-sm font-semibold outline-none transition focus:border-primary focus:shadow-glow">
-              {(mode === "same" ? sameBanks : banks).map((b) => <option key={b} value={b}>{b}</option>)}
-            </select>
+            {mode !== "same" && <div className="space-y-2"><label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Select Bank</label><div className="relative"><Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" /><input value={bankSearch} onChange={(e) => setBankSearch(e.target.value)} placeholder="Search Nigerian banks" className="h-12 w-full rounded-xl border border-border bg-card pl-9 pr-3 text-sm font-semibold outline-none transition focus:border-primary focus:shadow-glow" /></div><select value={bank} onChange={(e) => setBank(e.target.value)} className="h-12 w-full rounded-xl border border-border bg-card px-3 text-sm font-semibold outline-none transition focus:border-primary focus:shadow-glow">{filteredBanks.map((b: string) => <option key={b} value={b}>{b}</option>)}</select></div>}
             <div className="float-field"><input type="text" inputMode="numeric" placeholder=" " value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} /><label>Amount (₦)</label></div>
             <div className="float-field"><input type="text" inputMode="numeric" maxLength={mode === "phone" ? 11 : 10} placeholder=" " value={mode === "phone" ? phone : account} onChange={(e) => mode === "phone" ? setPhone(e.target.value.replace(/\D/g, "")) : setAccount(e.target.value.replace(/\D/g, ""))} /><label>{mode === "phone" ? "Phone number" : "Account number"}</label></div>
+            {mode === "same" && <div className="float-field"><input type="text" placeholder=" " value={remark} onChange={(e) => setRemark(e.target.value)} /><label>Remark</label></div>}
             <div className="min-h-14 rounded-xl bg-rose-50 p-3 ring-1 ring-rose-100">
               {accountName ? <div className="flex items-center gap-2 text-sm font-black text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500" />{accountName}</div> : <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground"><Landmark className="h-4 w-4 text-primary" />Account name appears automatically</div>}
               <p className="mt-1 text-[11px] text-muted-foreground">Mock name enquiry · {activeBank}</p>
