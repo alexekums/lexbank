@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownLeft, ArrowUpRight, Car, Clapperboard, Eye, EyeOff, Gamepad2, Plane, Plus, Receipt, Smartphone, Wifi, X, Zap } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Bell, Car, Clapperboard, Copy, Eye, EyeOff, Gamepad2, Gift, PiggyBank, Plane, Plus, Receipt, Smartphone, Target, Wifi, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { formatNGN, formatUSD } from "@/lib/mockData";
@@ -53,6 +53,14 @@ function HomePage() {
   const [flow, setFlow] = useState<Flow | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [goals, setGoals] = useState([
+    { name: "New Phone", target: 850000, saved: 325000, deadline: "Aug 2026" },
+    { name: "Wedding", target: 3500000, saved: 920000, deadline: "Dec 2026" },
+  ]);
+  const [goalName, setGoalName] = useState("");
+  const [goalAmount, setGoalAmount] = useState("");
+  const [goalDeadline, setGoalDeadline] = useState("");
   const balances = useBalances();
   const transactions = useTransactions();
   const cryptoUsd = balances.crypto.reduce((s, c) => s + c.amount * c.priceUsd, 0);
@@ -61,8 +69,25 @@ function HomePage() {
     0,
   );
   const visibleTransactions = useMemo(() => (showAll ? transactions : transactions.slice(0, 4)), [showAll, transactions]);
+  const budgetCategories = useMemo(() => {
+    const totals = transactions.reduce<Record<string, number>>((acc, tx) => {
+      if (tx.amount < 0) acc[tx.category] = (acc[tx.category] ?? 0) + Math.abs(tx.amount);
+      return acc;
+    }, {});
+    return Object.entries(totals).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  }, [transactions]);
 
   const openTransfer = () => navigate({ to: "/app/transfers" });
+  const createGoal = (e: FormEvent) => {
+    e.preventDefault();
+    const target = Number(goalAmount);
+    if (!goalName.trim() || target < 1000 || !goalDeadline.trim()) return toast.error("Enter goal name, amount and deadline");
+    setGoals((current) => [{ name: goalName.trim(), target, saved: 0, deadline: goalDeadline.trim() }, ...current]);
+    setGoalName("");
+    setGoalAmount("");
+    setGoalDeadline("");
+    toast.success("Savings goal created");
+  };
 
   return (
     <div className="mx-auto max-w-md">
@@ -77,13 +102,19 @@ function HomePage() {
               <p className="text-sm font-semibold tracking-wide">let's bank</p>
             </div>
           </div>
-          <button
-            onClick={() => setShow((s) => !s)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/30"
-            aria-label="Toggle balance"
-          >
-            {show ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setNotificationsOpen(true)} className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/30" aria-label="Open notifications">
+              <Bell className="h-4 w-4" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary-foreground" />
+            </button>
+            <button
+              onClick={() => setShow((s) => !s)}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/30"
+              aria-label="Toggle balance"
+            >
+              {show ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
 
         <div className="mt-7">
