@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Bell, ChevronRight, CreditCard, HelpCircle, Lock, LogOut, Settings, Shield, Sparkles, User } from "lucide-react";
+import { Bell, Camera, ChevronRight, CreditCard, Fingerprint, HelpCircle, KeyRound, Lock, LogOut, Settings, Shield, Sparkles, User } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 
@@ -35,13 +36,51 @@ const groups: Array<{ title: string; items: { icon: typeof User; label: string; 
 ];
 
 function MorePage() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
+  const [name, setName] = useState(user?.name ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [phone, setPhone] = useState("0803 452 1980");
+  const [bvn, setBvn] = useState("");
+  const [password, setPassword] = useState("");
+  const [pin, setPin] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
+  const [twoFa, setTwoFa] = useState(true);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+  }, [darkMode]);
 
   const handleLogout = () => {
     logout();
     toast.success("Signed out");
     navigate({ to: "/login" });
+  };
+
+  const saveProfile = (e: FormEvent) => {
+    e.preventDefault();
+    updateUser({ name: name.trim() || user?.name, email: email.trim() || user?.email });
+    toast.success("Profile updated");
+  };
+
+  const verifyKyc = (e: FormEvent) => {
+    e.preventDefault();
+    if (bvn.replace(/\D/g, "").length !== 11) return toast.error("Enter an 11-digit BVN");
+    toast.success("KYC submitted", { description: "ID, selfie and BVN verified in demo mode" });
+  };
+
+  const updatePassword = (e: FormEvent) => {
+    e.preventDefault();
+    if (password.length < 6) return toast.error("Password must be at least 6 characters");
+    setPassword("");
+    toast.success("Password changed");
+  };
+
+  const updatePin = (e: FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{4}$/.test(pin)) return toast.error("Enter a 4-digit PIN");
+    setPin("");
+    toast.success("Transaction PIN updated");
   };
 
   return (
