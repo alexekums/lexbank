@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
-import { ArrowLeftRight, CheckCircle2, Clock, Landmark, Phone, Repeat, Users, Zap, Building2 } from "lucide-react";
+import { ArrowLeftRight, CheckCircle2, Clock, Landmark, Phone, Repeat, Search, Users, Zap, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatNGN } from "@/lib/mockData";
 import { balancesActions, useBalances } from "@/lib/balancesStore";
@@ -18,8 +18,7 @@ const beneficiaries = [
   { id: "b4", name: "Mum 💖", bank: "UBA", initials: "M" },
 ];
 
-const banks = ["GTBank", "Zenith Bank", "Access Bank", "FirstBank", "UBA", "Fidelity Bank", "Stanbic IBTC", "Sterling Bank"];
-const sameBanks = ["LexBank", "Kuda", "Opay", "PalmPay", "Moniepoint"];
+const banks = ["Access Bank", "Zenith Bank", "GTBank", "UBA", "First Bank", "Stanbic IBTC", "Fidelity Bank", "FCMB", "Wema Bank", "Sterling Bank", "Union Bank", "Keystone Bank", "Polaris Bank", "Unity Bank", "Heritage Bank", "Providus Bank", "Jaiz Bank", "SunTrust Bank", "Kuda", "Opay", "PalmPay", "Moniepoint", "VFD Microfinance", "TAJ Bank", "Titan Trust Bank"];
 const mockNames = ["TUNDE ADEBAYO", "AMAKA OKORO", "CHINEDU NWOSU", "AISHA BELLO", "KELVIN EZE"];
 
 type Mode = "other" | "same" | "schedule" | "phone" | "recurring";
@@ -29,11 +28,13 @@ function TransfersPage() {
   const [amount, setAmount] = useState("");
   const [account, setAccount] = useState("");
   const [phone, setPhone] = useState("");
+  const [remark, setRemark] = useState("");
+  const [bankSearch, setBankSearch] = useState("");
   const [mode, setMode] = useState<Mode>("other");
   const [bank, setBank] = useState(banks[0]);
-  const [sameBank, setSameBank] = useState(sameBanks[0]);
 
-  const activeBank = mode === "same" ? sameBank : bank;
+  const activeBank = mode === "same" ? "LexBank" : bank;
+  const filteredBanks = useMemo(() => banks.filter((b) => b.toLowerCase().includes(bankSearch.toLowerCase().trim())), [bankSearch]);
   const accountName = useMemo(() => {
     const digits = (mode === "phone" ? phone : account).replace(/\D/g, "");
     if (digits.length < (mode === "phone" ? 11 : 10)) return "";
