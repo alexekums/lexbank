@@ -182,6 +182,51 @@ function HomePage() {
 
       <section className="mt-6 px-5">
         <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-bold tracking-tight">Savings goals</h2>
+          <PiggyBank className="h-4 w-4 text-primary" />
+        </div>
+        <div className="space-y-3">
+          {goals.map((goal) => {
+            const progress = Math.min(100, Math.round((goal.saved / goal.target) * 100));
+            return (
+              <div key={`${goal.name}-${goal.deadline}`} className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+                <div className="flex items-start justify-between gap-3">
+                  <div><p className="text-sm font-black">{goal.name}</p><p className="text-[11px] text-muted-foreground">Due {goal.deadline}</p></div>
+                  <p className="text-xs font-black text-primary">{progress}%</p>
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-gradient-primary" style={{ width: `${progress}%` }} /></div>
+                <p className="mt-2 text-[11px] text-muted-foreground">{formatNGN(goal.saved)} saved of {formatNGN(goal.target)}</p>
+              </div>
+            );
+          })}
+          <form onSubmit={createGoal} className="grid grid-cols-2 gap-2 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-rose-100">
+            <input value={goalName} onChange={(e) => setGoalName(e.target.value)} placeholder="Goal name" className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold outline-none focus:border-primary" />
+            <input value={goalAmount} onChange={(e) => setGoalAmount(e.target.value.replace(/\D/g, ""))} placeholder="Target amount" inputMode="numeric" className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold outline-none focus:border-primary" />
+            <input value={goalDeadline} onChange={(e) => setGoalDeadline(e.target.value)} placeholder="Deadline" className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold outline-none focus:border-primary" />
+            <button className="rounded-xl bg-gradient-primary px-3 py-2 text-xs font-black text-primary-foreground">Create goal</button>
+          </form>
+        </div>
+      </section>
+
+      <section className="mt-6 px-5">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+            <Gift className="mb-3 h-5 w-5 text-primary" />
+            <p className="text-sm font-black">Refer &amp; Earn</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Share your code and earn ₦1,000 per active friend.</p>
+            <button onClick={() => { navigator.clipboard?.writeText("LEX-4521"); toast.success("Referral code copied"); }} className="mt-3 flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-secondary text-xs font-black text-primary"><Copy className="h-3.5 w-3.5" />LEX-4521</button>
+          </div>
+          <div className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+            <Target className="mb-3 h-5 w-5 text-primary" />
+            <p className="text-sm font-black">Budget Tracker</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Top spend: {budgetCategories[0]?.[0] ?? "None"}</p>
+            <div className="mt-3 space-y-2">{budgetCategories.slice(0, 3).map(([category, total]) => <div key={category} className="flex items-center justify-between text-[11px]"><span className="truncate text-muted-foreground">{category}</span><span className="font-black">{formatNGN(total).replace(".00", "")}</span></div>)}</div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-6 px-5">
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-bold tracking-tight">Recent transactions</h2>
           <button onClick={() => setShowAll((v) => !v)} className="text-xs font-semibold text-primary">
             {showAll ? "Show less" : "See all transactions"}
@@ -203,6 +248,7 @@ function HomePage() {
         </ul>
       </section>
 
+      <AnimatePresence>{notificationsOpen && <NotificationsSheet onClose={() => setNotificationsOpen(false)} />}</AnimatePresence>
       <AnimatePresence>{moreOpen && <MoreServicesSheet onClose={() => setMoreOpen(false)} onPick={(next: Flow) => { setMoreOpen(false); setFlow(next); }} />}</AnimatePresence>
       <AnimatePresence>{flow && <ActionSheet flow={flow} balance={balances.ngn} onClose={() => setFlow(null)} />}</AnimatePresence>
     </div>
