@@ -329,6 +329,29 @@ function MoreServicesSheet({ onClose, onPick }: { onClose: () => void; onPick: (
   );
 }
 
+function NotificationsSheet({ onClose }: { onClose: () => void }) {
+  const notifications = [
+    { title: "Savings milestone", body: "New Phone goal is now 38% funded.", time: "Now" },
+    { title: "Budget insight", body: "Airtime & data is trending above last month.", time: "12m" },
+    { title: "LexTX calendar", body: "US GDP and BoE rate decision this week.", time: "1h" },
+    { title: "Card security", body: "International card transactions remain blocked.", time: "Today" },
+  ];
+
+  return (
+    <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/45 px-4 pb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.div initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 80 }} className="w-full max-w-md rounded-3xl bg-card p-5 shadow-card ring-1 ring-border">
+        <div className="mb-4 flex items-center justify-between">
+          <div><p className="text-[11px] font-bold uppercase tracking-wider text-primary">Notifications</p><h3 className="text-lg font-black">Activity center</h3></div>
+          <button type="button" onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="space-y-2">
+          {notifications.map((item) => <div key={item.title} className="rounded-2xl bg-secondary p-3 ring-1 ring-border"><div className="flex items-center justify-between gap-3"><p className="text-sm font-black">{item.title}</p><span className="text-[10px] font-bold text-primary">{item.time}</span></div><p className="mt-1 text-xs text-muted-foreground">{item.body}</p></div>)}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function MiniCard({ label, value, accent, positive }: { label: string; value: string; accent: string; positive?: boolean }) {
   return (
     <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-rose-100">
