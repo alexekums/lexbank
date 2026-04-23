@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownLeft, ArrowUpRight, Eye, EyeOff, Plus, Receipt, Smartphone, Wifi, X, Zap } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Car, Clapperboard, Eye, EyeOff, Gamepad2, Plane, Plus, Receipt, Smartphone, Wifi, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { formatNGN, formatUSD } from "@/lib/mockData";
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/app/home")({
   component: HomePage,
 });
 
-type Flow = "deposit" | "request" | "bills" | "airtime" | "data" | "electricity" | "tv";
+type Flow = "deposit" | "request" | "bills" | "airtime" | "data" | "electricity" | "tv" | "travel" | "betting" | "transport";
 
 const flowCopy: Record<Flow, { title: string; label: string; icon: string; category: string; success: string }> = {
   deposit: { title: "Deposit money", label: "Deposit amount (₦)", icon: "💰", category: "Income", success: "Deposit successful" },
@@ -23,6 +23,27 @@ const flowCopy: Record<Flow, { title: string; label: string; icon: string; categ
   data: { title: "Buy data", label: "Data bundle amount (₦)", icon: "🌐", category: "Data & Airtime", success: "Data bundle purchased" },
   electricity: { title: "Pay electricity", label: "Electricity amount (₦)", icon: "⚡", category: "Utilities", success: "Electricity token purchased" },
   tv: { title: "Pay TV", label: "TV subscription amount (₦)", icon: "📺", category: "Subscriptions", success: "TV subscription paid" },
+  travel: { title: "Book travel", label: "Travel amount (₦)", icon: "✈️", category: "Travel", success: "Travel payment created" },
+  betting: { title: "Fund betting wallet", label: "Funding amount (₦)", icon: "🎮", category: "Entertainment", success: "Betting wallet funded" },
+  transport: { title: "Pay transport", label: "Transport amount (₦)", icon: "🚗", category: "Transport", success: "Transport payment sent" },
+};
+
+const providers: Partial<Record<Flow, string[]>> = {
+  airtime: ["MTN", "Airtel", "Glo", "9mobile"],
+  data: ["MTN Data", "Airtel Data", "Glo Data", "9mobile Data"],
+  electricity: ["EKEDC / NEPA", "IKEDC / PHCN", "AEDC", "PHED", "KEDCO"],
+  tv: ["DSTV", "GOTV", "Startimes", "Showmax"],
+  bills: ["Electricity", "Cable TV", "Internet", "Waste bill"],
+  travel: ["Flights", "Hotels", "Interstate bus"],
+  betting: ["Bet9ja", "SportyBet", "BetKing", "1xBet"],
+  transport: ["Uber", "Bolt", "Cowry", "BRT"],
+};
+
+const amountPresets: Partial<Record<Flow, number[]>> = {
+  airtime: [500, 1000, 2000, 5000],
+  data: [1000, 2000, 3500, 10000],
+  electricity: [5000, 10000, 20000, 50000],
+  tv: [3300, 7600, 12500, 24500],
 };
 
 function HomePage() {
@@ -30,6 +51,7 @@ function HomePage() {
   const navigate = useNavigate();
   const [show, setShow] = useState(true);
   const [flow, setFlow] = useState<Flow | null>(null);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const balances = useBalances();
   const transactions = useTransactions();
@@ -112,6 +134,9 @@ function HomePage() {
             </button>
           ))}
         </div>
+        <button onClick={() => setMoreOpen(true)} className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white text-sm font-black text-primary shadow-sm ring-1 ring-rose-100 transition active:scale-95">
+          <Clapperboard className="h-4 w-4" /> More Services
+        </button>
       </section>
 
       <section className="mt-6 px-5">
@@ -147,6 +172,7 @@ function HomePage() {
         </ul>
       </section>
 
+      <AnimatePresence>{moreOpen && <MoreServicesSheet onClose={() => setMoreOpen(false)} onPick={(next: Flow) => { setMoreOpen(false); setFlow(next); }} />}</AnimatePresence>
       <AnimatePresence>{flow && <ActionSheet flow={flow} balance={balances.ngn} onClose={() => setFlow(null)} />}</AnimatePresence>
     </div>
   );
@@ -154,10 +180,12 @@ function HomePage() {
 
 function ActionSheet({ flow, balance, onClose }: { flow: Flow; balance: number; onClose: () => void }) {
   const [amount, setAmount] = useState("");
-  const [detail, setDetail] = useState("");
+  const [detail, setDetail] = useState(providers[flow]?.[0] ?? "");
   const copy = flowCopy[flow];
   const isCredit = flow === "deposit";
   const isRequest = flow === "request";
+  const options = providers[flow];
+  const presets = amountPresets[flow];
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -187,11 +215,39 @@ function ActionSheet({ flow, balance, onClose }: { flow: Flow; balance: number; 
           <button type="button" onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
         </div>
         <div className="space-y-3">
+          {options && <div className="grid grid-cols-2 gap-2">{options.map((option) => <button type="button" key={option} onClick={() => setDetail(option)} className={`rounded-xl px-3 py-2 text-xs font-black ${detail === option ? "bg-gradient-primary text-primary-foreground shadow-card" : "bg-secondary text-foreground"}`}>{option}</button>)}</div>}
+          {presets && <div className="grid grid-cols-4 gap-2">{presets.map((preset) => <button type="button" key={preset} onClick={() => setAmount(String(preset))} className="rounded-xl bg-rose-50 px-2 py-2 text-xs font-black text-primary ring-1 ring-rose-100">{formatNGN(preset).replace(".00", "")}</button>)}</div>}
           <div className="float-field"><input value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder=" " /><label>{copy.label}</label></div>
           <div className="float-field"><input value={detail} onChange={(e) => setDetail(e.target.value)} placeholder=" " /><label>{isRequest ? "Contact or note" : "Provider / reference"}</label></div>
         </div>
         <button className="btn-shine mt-5 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card">Continue</button>
       </motion.form>
+    </motion.div>
+  );
+}
+
+function MoreServicesSheet({ onClose, onPick }: { onClose: () => void; onPick: (flow: Flow) => void }) {
+  const services = [
+    { icon: Plane, label: "Travel", flow: "travel" as const },
+    { icon: Gamepad2, label: "Betting", flow: "betting" as const },
+    { icon: Car, label: "Transport", flow: "transport" as const },
+    { icon: Receipt, label: "Bills", flow: "bills" as const },
+  ];
+
+  return (
+    <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/45 px-4 pb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.div initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 80 }} className="w-full max-w-md rounded-3xl bg-card p-5 shadow-card ring-1 ring-border">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-primary">Services</p>
+            <h3 className="text-lg font-black">More Services</h3>
+          </div>
+          <button type="button" onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {services.map((service) => <button key={service.label} onClick={() => onPick(service.flow)} className="rounded-2xl bg-secondary p-4 text-left ring-1 ring-border transition active:scale-95"><service.icon className="mb-3 h-5 w-5 text-primary" /><p className="text-sm font-black">{service.label}</p><p className="text-[11px] text-muted-foreground">Pay instantly</p></button>)}
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

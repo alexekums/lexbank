@@ -49,6 +49,15 @@ export const initialForex: ForexPair[] = [
   { pair: "EUR/USD", bid: 1.0842, ask: 1.0844, change: -0.18 },
   { pair: "GBP/USD", bid: 1.2715, ask: 1.2718, change: 0.27 },
   { pair: "USD/JPY", bid: 154.32, ask: 154.35, change: -0.05 },
+  { pair: "AUD/USD", bid: 0.6428, ask: 0.6430, change: 0.12 },
+  { pair: "USD/CAD", bid: 1.3725, ask: 1.3728, change: -0.09 },
+  { pair: "NZD/USD", bid: 0.5924, ask: 0.5927, change: 0.16 },
+  { pair: "EUR/GBP", bid: 0.8526, ask: 0.8529, change: -0.11 },
+  { pair: "USD/CHF", bid: 0.9132, ask: 0.9135, change: 0.08 },
+  { pair: "EUR/JPY", bid: 167.31, ask: 167.36, change: 0.23 },
+  { pair: "GBP/JPY", bid: 196.18, ask: 196.25, change: 0.34 },
+  { pair: "EUR/CAD", bid: 1.4882, ask: 1.4887, change: -0.14 },
+  { pair: "AUD/JPY", bid: 99.21, ask: 99.26, change: 0.19 },
   { pair: "EUR/NGN", bid: 1747.80, ask: 1750.10, change: 0.31 },
 ];
 

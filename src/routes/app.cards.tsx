@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
-import { CreditCard, Plus, ShieldCheck, Sparkles } from "lucide-react";
+import { CreditCard, MapPin, Phone, Plus, ShieldCheck, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { formatNGN } from "@/lib/mockData";
@@ -37,6 +37,8 @@ function CardsPage() {
   const [cards, setCards] = useState<VirtualCard[]>(starterCards);
   const [label, setLabel] = useState("");
   const [funding, setFunding] = useState("50000");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
   const active = cards[0];
 
   const total = useMemo(() => cards.reduce((sum, card) => sum + card.balance, 0), [cards]);
@@ -58,6 +60,14 @@ function CardsPage() {
     setLabel("");
     setFunding("50000");
     toast.success("Virtual card created", { description: `${card.name} is ready to use` });
+  };
+
+  const requestPhysicalCard = (e: FormEvent) => {
+    e.preventDefault();
+    if (address.trim().length < 10 || phone.trim().length < 10) return toast.error("Enter delivery address and phone number");
+    setAddress("");
+    setPhone("");
+    toast.success("Physical Mastercard requested", { description: "Delivery fee ₦2,500 · ETA 7–14 days" });
   };
 
   return (
@@ -115,6 +125,28 @@ function CardsPage() {
             </div>
           </div>
           <button className="btn-shine mt-4 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card">Create virtual card</button>
+        </form>
+
+        <form onSubmit={requestPhysicalCard} className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+          <div className="mb-3 flex items-center gap-2">
+            <CreditCard className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-black">Request Physical Mastercard</h2>
+          </div>
+          <div className="space-y-3">
+            <div className="float-field">
+              <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder=" " />
+              <label>Delivery address</label>
+            </div>
+            <div className="float-field">
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder=" " />
+              <label>Phone number</label>
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-xl bg-secondary p-3"><MapPin className="mb-1 h-4 w-4 text-primary" /><p className="font-bold">Delivery fee</p><p className="text-muted-foreground">{formatNGN(2500)}</p></div>
+            <div className="rounded-xl bg-secondary p-3"><Phone className="mb-1 h-4 w-4 text-primary" /><p className="font-bold">Estimated time</p><p className="text-muted-foreground">7–14 days</p></div>
+          </div>
+          <button className="btn-shine mt-4 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card">Request Mastercard</button>
         </form>
 
         <section>
