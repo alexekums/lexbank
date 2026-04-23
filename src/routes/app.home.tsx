@@ -172,7 +172,7 @@ function HomePage() {
         </ul>
       </section>
 
-      <AnimatePresence>{moreOpen && <MoreServicesSheet onClose={() => setMoreOpen(false)} onPick={(next) => { setMoreOpen(false); setFlow(next); }} />}</AnimatePresence>
+      <AnimatePresence>{moreOpen && <MoreServicesSheet onClose={() => setMoreOpen(false)} onPick={(next: Flow) => { setMoreOpen(false); setFlow(next); }} />}</AnimatePresence>
       <AnimatePresence>{flow && <ActionSheet flow={flow} balance={balances.ngn} onClose={() => setFlow(null)} />}</AnimatePresence>
     </div>
   );
@@ -180,10 +180,12 @@ function HomePage() {
 
 function ActionSheet({ flow, balance, onClose }: { flow: Flow; balance: number; onClose: () => void }) {
   const [amount, setAmount] = useState("");
-  const [detail, setDetail] = useState("");
+  const [detail, setDetail] = useState(providers[flow]?.[0] ?? "");
   const copy = flowCopy[flow];
   const isCredit = flow === "deposit";
   const isRequest = flow === "request";
+  const options = providers[flow];
+  const presets = amountPresets[flow];
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -213,11 +215,39 @@ function ActionSheet({ flow, balance, onClose }: { flow: Flow; balance: number; 
           <button type="button" onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
         </div>
         <div className="space-y-3">
+          {options && <div className="grid grid-cols-2 gap-2">{options.map((option) => <button type="button" key={option} onClick={() => setDetail(option)} className={`rounded-xl px-3 py-2 text-xs font-black ${detail === option ? "bg-gradient-primary text-primary-foreground shadow-card" : "bg-secondary text-foreground"}`}>{option}</button>)}</div>}
+          {presets && <div className="grid grid-cols-4 gap-2">{presets.map((preset) => <button type="button" key={preset} onClick={() => setAmount(String(preset))} className="rounded-xl bg-rose-50 px-2 py-2 text-xs font-black text-primary ring-1 ring-rose-100">{formatNGN(preset).replace(".00", "")}</button>)}</div>}
           <div className="float-field"><input value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder=" " /><label>{copy.label}</label></div>
           <div className="float-field"><input value={detail} onChange={(e) => setDetail(e.target.value)} placeholder=" " /><label>{isRequest ? "Contact or note" : "Provider / reference"}</label></div>
         </div>
         <button className="btn-shine mt-5 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card">Continue</button>
       </motion.form>
+    </motion.div>
+  );
+}
+
+function MoreServicesSheet({ onClose, onPick }: { onClose: () => void; onPick: (flow: Flow) => void }) {
+  const services = [
+    { icon: Plane, label: "Travel", flow: "travel" as const },
+    { icon: Gamepad2, label: "Betting", flow: "betting" as const },
+    { icon: Car, label: "Transport", flow: "transport" as const },
+    { icon: Receipt, label: "Bills", flow: "bills" as const },
+  ];
+
+  return (
+    <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/45 px-4 pb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.div initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 80 }} className="w-full max-w-md rounded-3xl bg-card p-5 shadow-card ring-1 ring-border">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-primary">Services</p>
+            <h3 className="text-lg font-black">More Services</h3>
+          </div>
+          <button type="button" onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {services.map((service) => <button key={service.label} onClick={() => onPick(service.flow)} className="rounded-2xl bg-secondary p-4 text-left ring-1 ring-border transition active:scale-95"><service.icon className="mb-3 h-5 w-5 text-primary" /><p className="text-sm font-black">{service.label}</p><p className="text-[11px] text-muted-foreground">Pay instantly</p></button>)}
+        </div>
+      </motion.div>
     </motion.div>
   );
 }
