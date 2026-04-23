@@ -101,28 +101,25 @@ function MorePage() {
       </header>
 
       <div className="space-y-5 px-5 pt-5">
-        {groups.map((g) => (
-          <section key={g.title}>
-            <h2 className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              {g.title}
-            </h2>
-            <ul className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-rose-100">
-              {g.items.map((it, i) => (
-                <li
-                  key={it.label}
-                  className={`flex items-center gap-3 px-4 py-3 ${i !== 0 ? "border-t border-rose-50" : ""}`}
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-primary">
-                    <it.icon className="h-4 w-4" />
-                  </span>
-                  <p className="flex-1 text-sm font-semibold">{it.label}</p>
-                  {it.hint && <span className="text-[11px] text-emerald-600">{it.hint}</span>}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+        <form onSubmit={saveProfile} className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+          <div className="mb-3 flex items-center gap-3"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-lg font-black text-primary">{name[0]?.toUpperCase() ?? "L"}</span><div><h2 className="text-sm font-black">Complete Profile</h2><p className="text-[11px] text-muted-foreground">Avatar, name, phone and email</p></div></div>
+          <div className="space-y-3"><button type="button" onClick={() => toast.success("Avatar updated in demo mode")} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-secondary text-xs font-black text-primary"><Camera className="h-4 w-4" />Upload avatar</button><div className="float-field"><input value={name} onChange={(e) => setName(e.target.value)} placeholder=" " /><label>Full name</label></div><div className="float-field"><input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder=" " /><label>Phone number</label></div><div className="float-field"><input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder=" " /><label>Email address</label></div></div>
+          <button className="btn-shine mt-4 h-11 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card">Save profile</button>
+        </form>
+
+        <form onSubmit={verifyKyc} className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+          <div className="mb-3 flex items-center gap-2"><Shield className="h-4 w-4 text-primary" /><h2 className="text-sm font-black">KYC Verification</h2></div>
+          <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => toast.success("ID uploaded")} className="rounded-xl bg-secondary p-3 text-xs font-black text-foreground">Upload ID</button><button type="button" onClick={() => toast.success("Selfie captured")} className="rounded-xl bg-secondary p-3 text-xs font-black text-foreground">Take selfie</button></div>
+          <div className="float-field mt-3"><input value={bvn} onChange={(e) => setBvn(e.target.value.replace(/\D/g, "").slice(0, 11))} inputMode="numeric" placeholder=" " /><label>BVN</label></div>
+          <button className="mt-4 h-11 w-full rounded-xl bg-secondary text-sm font-black text-primary ring-1 ring-border">Submit KYC</button>
+        </form>
+
+        <section className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+          <div className="mb-3 flex items-center gap-2"><Settings className="h-4 w-4 text-primary" /><h2 className="text-sm font-black">Settings</h2></div>
+          <div className="space-y-3"><ToggleRow icon={Sparkles} label="Dark Mode" active={darkMode} onClick={() => setDarkMode((v) => !v)} /><ToggleRow icon={Fingerprint} label="2FA" active={twoFa} onClick={() => setTwoFa((v) => !v)} /></div>
+          <form onSubmit={updatePassword} className="mt-4 space-y-3"><div className="float-field"><input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder=" " /><label>New password</label></div><button className="h-10 w-full rounded-xl bg-secondary text-xs font-black text-primary"><KeyRound className="mr-1 inline h-3.5 w-3.5" />Change Password</button></form>
+          <form onSubmit={updatePin} className="mt-3 space-y-3"><div className="float-field"><input value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} inputMode="numeric" placeholder=" " /><label>Transaction PIN</label></div><button className="h-10 w-full rounded-xl bg-secondary text-xs font-black text-primary"><Lock className="mr-1 inline h-3.5 w-3.5" />Update PIN</button></form>
+        </section>
 
         <button
           onClick={handleLogout}
