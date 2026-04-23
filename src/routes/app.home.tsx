@@ -51,6 +51,7 @@ function HomePage() {
   const navigate = useNavigate();
   const [show, setShow] = useState(true);
   const [flow, setFlow] = useState<Flow | null>(null);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const balances = useBalances();
   const transactions = useTransactions();
@@ -133,6 +134,9 @@ function HomePage() {
             </button>
           ))}
         </div>
+        <button onClick={() => setMoreOpen(true)} className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white text-sm font-black text-primary shadow-sm ring-1 ring-rose-100 transition active:scale-95">
+          <Clapperboard className="h-4 w-4" /> More Services
+        </button>
       </section>
 
       <section className="mt-6 px-5">
@@ -168,6 +172,7 @@ function HomePage() {
         </ul>
       </section>
 
+      <AnimatePresence>{moreOpen && <MoreServicesSheet onClose={() => setMoreOpen(false)} onPick={(next) => { setMoreOpen(false); setFlow(next); }} />}</AnimatePresence>
       <AnimatePresence>{flow && <ActionSheet flow={flow} balance={balances.ngn} onClose={() => setFlow(null)} />}</AnimatePresence>
     </div>
   );
