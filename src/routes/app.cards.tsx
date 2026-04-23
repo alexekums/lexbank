@@ -124,6 +124,21 @@ function CardsPage() {
           </motion.section>
         )}
 
+        {active && (
+          <section className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+            <div className="mb-3 flex items-center gap-2"><WalletCards className="h-4 w-4 text-primary" /><h2 className="text-sm font-black">Card control</h2></div>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => { updateActiveCard({ frozen: !active.frozen }); toast.success(active.frozen ? "Card unfrozen" : "Card frozen"); }} className="rounded-xl bg-secondary p-3 text-left text-xs font-black ring-1 ring-border"><Snowflake className="mb-2 h-4 w-4 text-primary" />{active.frozen ? "Unfreeze card" : "Freeze card"}<p className="mt-1 font-medium text-muted-foreground">{active.frozen ? "Card is paused" : "Pause instantly"}</p></button>
+              <button onClick={() => { updateActiveCard({ internationalBlocked: !active.internationalBlocked }); toast.success(active.internationalBlocked ? "International enabled" : "International blocked"); }} className="rounded-xl bg-secondary p-3 text-left text-xs font-black ring-1 ring-border"><Globe2 className="mb-2 h-4 w-4 text-primary" />International<p className="mt-1 font-medium text-muted-foreground">{active.internationalBlocked ? "Blocked" : "Allowed"}</p></button>
+            </div>
+            <form onSubmit={(e) => { e.preventDefault(); const next = Number(limit); if (next < 1000) return toast.error("Enter a valid limit"); updateActiveCard({ spendingLimit: next }); toast.success("Spending limit updated"); }} className="mt-3 flex gap-2">
+              <div className="float-field flex-1"><input value={limit} onChange={(e) => setLimit(e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder=" " /><label>Spending limit</label></div>
+              <button className="h-14 rounded-xl bg-gradient-primary px-4 text-xs font-black text-primary-foreground shadow-card"><Lock className="mr-1 inline h-3.5 w-3.5" />Set</button>
+            </form>
+            <p className="mt-2 text-[11px] text-muted-foreground">Current limit: {formatNGN(active.spendingLimit)}</p>
+          </section>
+        )}
+
         <form onSubmit={createCard} className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
           <div className="mb-3 flex items-center gap-2">
             <Plus className="h-4 w-4 text-primary" />
