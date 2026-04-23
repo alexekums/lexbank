@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownLeft, ArrowUpRight, Eye, EyeOff, Plus, Receipt, Smartphone, Wifi, X, Zap } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Car, Clapperboard, Eye, EyeOff, Gamepad2, Plane, Plus, Receipt, Smartphone, Wifi, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { formatNGN, formatUSD } from "@/lib/mockData";
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/app/home")({
   component: HomePage,
 });
 
-type Flow = "deposit" | "request" | "bills" | "airtime" | "data" | "electricity" | "tv";
+type Flow = "deposit" | "request" | "bills" | "airtime" | "data" | "electricity" | "tv" | "travel" | "betting" | "transport";
 
 const flowCopy: Record<Flow, { title: string; label: string; icon: string; category: string; success: string }> = {
   deposit: { title: "Deposit money", label: "Deposit amount (₦)", icon: "💰", category: "Income", success: "Deposit successful" },
@@ -23,6 +23,27 @@ const flowCopy: Record<Flow, { title: string; label: string; icon: string; categ
   data: { title: "Buy data", label: "Data bundle amount (₦)", icon: "🌐", category: "Data & Airtime", success: "Data bundle purchased" },
   electricity: { title: "Pay electricity", label: "Electricity amount (₦)", icon: "⚡", category: "Utilities", success: "Electricity token purchased" },
   tv: { title: "Pay TV", label: "TV subscription amount (₦)", icon: "📺", category: "Subscriptions", success: "TV subscription paid" },
+  travel: { title: "Book travel", label: "Travel amount (₦)", icon: "✈️", category: "Travel", success: "Travel payment created" },
+  betting: { title: "Fund betting wallet", label: "Funding amount (₦)", icon: "🎮", category: "Entertainment", success: "Betting wallet funded" },
+  transport: { title: "Pay transport", label: "Transport amount (₦)", icon: "🚗", category: "Transport", success: "Transport payment sent" },
+};
+
+const providers: Partial<Record<Flow, string[]>> = {
+  airtime: ["MTN", "Airtel", "Glo", "9mobile"],
+  data: ["MTN Data", "Airtel Data", "Glo Data", "9mobile Data"],
+  electricity: ["EKEDC / NEPA", "IKEDC / PHCN", "AEDC", "PHED", "KEDCO"],
+  tv: ["DSTV", "GOTV", "Startimes", "Showmax"],
+  bills: ["Electricity", "Cable TV", "Internet", "Waste bill"],
+  travel: ["Flights", "Hotels", "Interstate bus"],
+  betting: ["Bet9ja", "SportyBet", "BetKing", "1xBet"],
+  transport: ["Uber", "Bolt", "Cowry", "BRT"],
+};
+
+const amountPresets: Partial<Record<Flow, number[]>> = {
+  airtime: [500, 1000, 2000, 5000],
+  data: [1000, 2000, 3500, 10000],
+  electricity: [5000, 10000, 20000, 50000],
+  tv: [3300, 7600, 12500, 24500],
 };
 
 function HomePage() {
