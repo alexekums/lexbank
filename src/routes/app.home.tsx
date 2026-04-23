@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownLeft, ArrowUpRight, Car, Clapperboard, Eye, EyeOff, Gamepad2, Plane, Plus, Receipt, Smartphone, Wifi, X, Zap } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Bell, Car, Clapperboard, Copy, Eye, EyeOff, Gamepad2, Gift, PiggyBank, Plane, Plus, Receipt, Smartphone, Target, Wifi, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { formatNGN, formatUSD } from "@/lib/mockData";
@@ -53,6 +53,14 @@ function HomePage() {
   const [flow, setFlow] = useState<Flow | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [goals, setGoals] = useState([
+    { name: "New Phone", target: 850000, saved: 325000, deadline: "Aug 2026" },
+    { name: "Wedding", target: 3500000, saved: 920000, deadline: "Dec 2026" },
+  ]);
+  const [goalName, setGoalName] = useState("");
+  const [goalAmount, setGoalAmount] = useState("");
+  const [goalDeadline, setGoalDeadline] = useState("");
   const balances = useBalances();
   const transactions = useTransactions();
   const cryptoUsd = balances.crypto.reduce((s, c) => s + c.amount * c.priceUsd, 0);
@@ -61,8 +69,25 @@ function HomePage() {
     0,
   );
   const visibleTransactions = useMemo(() => (showAll ? transactions : transactions.slice(0, 4)), [showAll, transactions]);
+  const budgetCategories = useMemo(() => {
+    const totals = transactions.reduce<Record<string, number>>((acc, tx) => {
+      if (tx.amount < 0) acc[tx.category] = (acc[tx.category] ?? 0) + Math.abs(tx.amount);
+      return acc;
+    }, {});
+    return Object.entries(totals).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  }, [transactions]);
 
   const openTransfer = () => navigate({ to: "/app/transfers" });
+  const createGoal = (e: FormEvent) => {
+    e.preventDefault();
+    const target = Number(goalAmount);
+    if (!goalName.trim() || target < 1000 || !goalDeadline.trim()) return toast.error("Enter goal name, amount and deadline");
+    setGoals((current) => [{ name: goalName.trim(), target, saved: 0, deadline: goalDeadline.trim() }, ...current]);
+    setGoalName("");
+    setGoalAmount("");
+    setGoalDeadline("");
+    toast.success("Savings goal created");
+  };
 
   return (
     <div className="mx-auto max-w-md">
@@ -77,13 +102,19 @@ function HomePage() {
               <p className="text-sm font-semibold tracking-wide">let's bank</p>
             </div>
           </div>
-          <button
-            onClick={() => setShow((s) => !s)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/30"
-            aria-label="Toggle balance"
-          >
-            {show ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setNotificationsOpen(true)} className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/30" aria-label="Open notifications">
+              <Bell className="h-4 w-4" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary-foreground" />
+            </button>
+            <button
+              onClick={() => setShow((s) => !s)}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/30"
+              aria-label="Toggle balance"
+            >
+              {show ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
 
         <div className="mt-7">
@@ -151,6 +182,51 @@ function HomePage() {
 
       <section className="mt-6 px-5">
         <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-bold tracking-tight">Savings goals</h2>
+          <PiggyBank className="h-4 w-4 text-primary" />
+        </div>
+        <div className="space-y-3">
+          {goals.map((goal) => {
+            const progress = Math.min(100, Math.round((goal.saved / goal.target) * 100));
+            return (
+              <div key={`${goal.name}-${goal.deadline}`} className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+                <div className="flex items-start justify-between gap-3">
+                  <div><p className="text-sm font-black">{goal.name}</p><p className="text-[11px] text-muted-foreground">Due {goal.deadline}</p></div>
+                  <p className="text-xs font-black text-primary">{progress}%</p>
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-gradient-primary" style={{ width: `${progress}%` }} /></div>
+                <p className="mt-2 text-[11px] text-muted-foreground">{formatNGN(goal.saved)} saved of {formatNGN(goal.target)}</p>
+              </div>
+            );
+          })}
+          <form onSubmit={createGoal} className="grid grid-cols-2 gap-2 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-rose-100">
+            <input value={goalName} onChange={(e) => setGoalName(e.target.value)} placeholder="Goal name" className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold outline-none focus:border-primary" />
+            <input value={goalAmount} onChange={(e) => setGoalAmount(e.target.value.replace(/\D/g, ""))} placeholder="Target amount" inputMode="numeric" className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold outline-none focus:border-primary" />
+            <input value={goalDeadline} onChange={(e) => setGoalDeadline(e.target.value)} placeholder="Deadline" className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold outline-none focus:border-primary" />
+            <button className="rounded-xl bg-gradient-primary px-3 py-2 text-xs font-black text-primary-foreground">Create goal</button>
+          </form>
+        </div>
+      </section>
+
+      <section className="mt-6 px-5">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+            <Gift className="mb-3 h-5 w-5 text-primary" />
+            <p className="text-sm font-black">Refer &amp; Earn</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Share your code and earn ₦1,000 per active friend.</p>
+            <button onClick={() => { navigator.clipboard?.writeText("LEX-4521"); toast.success("Referral code copied"); }} className="mt-3 flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-secondary text-xs font-black text-primary"><Copy className="h-3.5 w-3.5" />LEX-4521</button>
+          </div>
+          <div className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+            <Target className="mb-3 h-5 w-5 text-primary" />
+            <p className="text-sm font-black">Budget Tracker</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Top spend: {budgetCategories[0]?.[0] ?? "None"}</p>
+            <div className="mt-3 space-y-2">{budgetCategories.slice(0, 3).map(([category, total]) => <div key={category} className="flex items-center justify-between text-[11px]"><span className="truncate text-muted-foreground">{category}</span><span className="font-black">{formatNGN(total).replace(".00", "")}</span></div>)}</div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-6 px-5">
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-bold tracking-tight">Recent transactions</h2>
           <button onClick={() => setShowAll((v) => !v)} className="text-xs font-semibold text-primary">
             {showAll ? "Show less" : "See all transactions"}
@@ -172,6 +248,7 @@ function HomePage() {
         </ul>
       </section>
 
+      <AnimatePresence>{notificationsOpen && <NotificationsSheet onClose={() => setNotificationsOpen(false)} />}</AnimatePresence>
       <AnimatePresence>{moreOpen && <MoreServicesSheet onClose={() => setMoreOpen(false)} onPick={(next: Flow) => { setMoreOpen(false); setFlow(next); }} />}</AnimatePresence>
       <AnimatePresence>{flow && <ActionSheet flow={flow} balance={balances.ngn} onClose={() => setFlow(null)} />}</AnimatePresence>
     </div>
@@ -246,6 +323,29 @@ function MoreServicesSheet({ onClose, onPick }: { onClose: () => void; onPick: (
         </div>
         <div className="grid grid-cols-2 gap-3">
           {services.map((service) => <button key={service.label} onClick={() => onPick(service.flow)} className="rounded-2xl bg-secondary p-4 text-left ring-1 ring-border transition active:scale-95"><service.icon className="mb-3 h-5 w-5 text-primary" /><p className="text-sm font-black">{service.label}</p><p className="text-[11px] text-muted-foreground">Pay instantly</p></button>)}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function NotificationsSheet({ onClose }: { onClose: () => void }) {
+  const notifications = [
+    { title: "Savings milestone", body: "New Phone goal is now 38% funded.", time: "Now" },
+    { title: "Budget insight", body: "Airtime & data is trending above last month.", time: "12m" },
+    { title: "LexTX calendar", body: "US GDP and BoE rate decision this week.", time: "1h" },
+    { title: "Card security", body: "International card transactions remain blocked.", time: "Today" },
+  ];
+
+  return (
+    <motion.div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/45 px-4 pb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.div initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 80 }} className="w-full max-w-md rounded-3xl bg-card p-5 shadow-card ring-1 ring-border">
+        <div className="mb-4 flex items-center justify-between">
+          <div><p className="text-[11px] font-bold uppercase tracking-wider text-primary">Notifications</p><h3 className="text-lg font-black">Activity center</h3></div>
+          <button type="button" onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="space-y-2">
+          {notifications.map((item) => <div key={item.title} className="rounded-2xl bg-secondary p-3 ring-1 ring-border"><div className="flex items-center justify-between gap-3"><p className="text-sm font-black">{item.title}</p><span className="text-[10px] font-bold text-primary">{item.time}</span></div><p className="mt-1 text-xs text-muted-foreground">{item.body}</p></div>)}
         </div>
       </motion.div>
     </motion.div>

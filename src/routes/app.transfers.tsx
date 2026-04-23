@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
-import { ArrowLeftRight, CheckCircle2, Clock, Landmark, Phone, Repeat, Search, Users, Zap, Building2 } from "lucide-react";
+import { ArrowLeftRight, CheckCircle2, Clock, Globe2, Landmark, Phone, Repeat, Search, Users, Zap, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatNGN } from "@/lib/mockData";
 import { balancesActions, useBalances } from "@/lib/balancesStore";
@@ -21,7 +21,8 @@ const beneficiaries = [
 const banks = ["Access Bank", "Zenith Bank", "GTBank", "UBA", "First Bank", "Stanbic IBTC", "Fidelity Bank", "FCMB", "Wema Bank", "Sterling Bank", "Union Bank", "Keystone Bank", "Polaris Bank", "Unity Bank", "Heritage Bank", "Providus Bank", "Jaiz Bank", "SunTrust Bank", "Kuda", "Opay", "PalmPay", "Moniepoint", "VFD Microfinance", "TAJ Bank", "Titan Trust Bank"];
 const mockNames = ["TUNDE ADEBAYO", "AMAKA OKORO", "CHINEDU NWOSU", "AISHA BELLO", "KELVIN EZE"];
 
-type Mode = "other" | "same" | "schedule" | "phone" | "recurring";
+type Mode = "other" | "same" | "schedule" | "phone" | "recurring" | "international";
+const currencies = ["USD", "GBP", "EUR", "CAD", "GHS", "ZAR"];
 
 function TransfersPage() {
   const balances = useBalances();
@@ -32,6 +33,7 @@ function TransfersPage() {
   const [bankSearch, setBankSearch] = useState("");
   const [mode, setMode] = useState<Mode>("other");
   const [bank, setBank] = useState(banks[0]);
+  const [currency, setCurrency] = useState(currencies[0]);
 
   const activeBank = mode === "same" ? "LexBank" : bank;
   const filteredBanks = useMemo(() => banks.filter((b) => b.toLowerCase().includes(bankSearch.toLowerCase().trim())), [bankSearch]);
@@ -48,7 +50,7 @@ function TransfersPage() {
     if (!n || digits.length < (mode === "phone" ? 11 : 10) || !accountName) return toast.error("Enter valid transfer details");
     if (n > balances.ngn) return toast.error("Insufficient Spend Balance");
     balancesActions.addNgn(-n);
-    transactionsActions.add({ title: `Transfer to ${accountName}`, category: mode === "same" ? "Same-bank transfer" : "Transfer", amount: -n, icon: mode === "same" ? "🏦" : "↗️" });
+    transactionsActions.add({ title: `Transfer to ${accountName}`, category: mode === "same" ? "Same-bank transfer" : mode === "international" ? "International transfer" : "Transfer", amount: -n, icon: mode === "same" ? "🏦" : mode === "international" ? "🌍" : "↗️" });
     toast.success(mode === "schedule" ? "Transfer scheduled" : `Sent ${formatNGN(n)} to ${accountName}`, { description: `${activeBank} •• ${digits.slice(-4)}` });
     setAmount("");
     setAccount("");
@@ -59,13 +61,14 @@ function TransfersPage() {
     <div className="mx-auto max-w-md">
       <header className="rounded-b-3xl bg-gradient-primary px-5 pb-6 pt-10 text-white shadow-card">
         <h1 className="text-2xl font-black">Transfers</h1>
-        <p className="mt-1 text-sm text-white/85">Send money to LexBank and major Nigerian banks.</p>
+        <p className="mt-1 text-sm text-white/85">Send money locally or internationally.</p>
       </header>
 
-      <section className="grid grid-cols-5 gap-2 px-5 pt-5">
+      <section className="grid grid-cols-3 gap-2 px-5 pt-5">
         {[
           { icon: Building2, label: "Same", value: "same" as const },
           { icon: Zap, label: "Instant", value: "other" as const },
+          { icon: Globe2, label: "Global", value: "international" as const },
           { icon: Clock, label: "Schedule", value: "schedule" as const },
           { icon: Phone, label: "Phone", value: "phone" as const },
           { icon: Repeat, label: "Repeat", value: "recurring" as const },
@@ -106,6 +109,7 @@ function TransfersPage() {
 
           <div className="space-y-3">
             {mode !== "same" && <div className="space-y-2"><label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Select Bank</label><div className="relative"><Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" /><input value={bankSearch} onChange={(e) => setBankSearch(e.target.value)} placeholder="Search Nigerian banks" className="h-12 w-full rounded-xl border border-border bg-card pl-9 pr-3 text-sm font-semibold outline-none transition focus:border-primary focus:shadow-glow" /></div><select value={bank} onChange={(e) => setBank(e.target.value)} className="h-12 w-full rounded-xl border border-border bg-card px-3 text-sm font-semibold outline-none transition focus:border-primary focus:shadow-glow">{filteredBanks.map((b: string) => <option key={b} value={b}>{b}</option>)}</select></div>}
+            {mode === "international" && <div className="space-y-2"><label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Destination currency</label><select value={currency} onChange={(e) => setCurrency(e.target.value)} className="h-12 w-full rounded-xl border border-border bg-card px-3 text-sm font-semibold outline-none transition focus:border-primary focus:shadow-glow">{currencies.map((c) => <option key={c} value={c}>{c}</option>)}</select><p className="rounded-xl bg-rose-50 p-3 text-[11px] font-semibold text-muted-foreground ring-1 ring-rose-100">Estimated recipient value shown in {currency}; SWIFT fees simulated in demo mode.</p></div>}
             <div className="float-field"><input type="text" inputMode="numeric" placeholder=" " value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} /><label>Amount (₦)</label></div>
             <div className="float-field"><input type="text" inputMode="numeric" maxLength={mode === "phone" ? 11 : 10} placeholder=" " value={mode === "phone" ? phone : account} onChange={(e) => mode === "phone" ? setPhone(e.target.value.replace(/\D/g, "")) : setAccount(e.target.value.replace(/\D/g, ""))} /><label>{mode === "phone" ? "Phone number" : "Account number"}</label></div>
             {mode === "same" && <div className="float-field"><input type="text" placeholder=" " value={remark} onChange={(e) => setRemark(e.target.value)} /><label>Remark</label></div>}
