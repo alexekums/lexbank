@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
-import { CreditCard, MapPin, Phone, Plus, ShieldCheck, Sparkles } from "lucide-react";
+import { CreditCard, Globe2, Lock, MapPin, Phone, Plus, ShieldCheck, Snowflake, Sparkles, WalletCards } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { formatNGN } from "@/lib/mockData";
@@ -17,6 +17,9 @@ type VirtualCard = {
   balance: number;
   created: string;
   history: { id: string; title: string; amount: number; date: string }[];
+  frozen: boolean;
+  spendingLimit: number;
+  internationalBlocked: boolean;
 };
 
 const starterCards: VirtualCard[] = [
@@ -26,6 +29,9 @@ const starterCards: VirtualCard[] = [
     number: "5321 8840 1294 7712",
     balance: 185000,
     created: "Apr 2026",
+    frozen: false,
+    spendingLimit: 250000,
+    internationalBlocked: true,
     history: [
       { id: "h1", title: "Netflix", amount: -6500, date: "Today" },
       { id: "h2", title: "Card top up", amount: 50000, date: "Yesterday" },
@@ -37,6 +43,7 @@ function CardsPage() {
   const [cards, setCards] = useState<VirtualCard[]>(starterCards);
   const [label, setLabel] = useState("");
   const [funding, setFunding] = useState("50000");
+  const [limit, setLimit] = useState("250000");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const active = cards[0];
@@ -54,12 +61,20 @@ function CardsPage() {
       number: `5321 8840 ${tail} ${String(Math.floor(1000 + Math.random() * 8999))}`,
       balance: amount,
       created: "New",
+      frozen: false,
+      spendingLimit: amount,
+      internationalBlocked: true,
       history: [{ id: `h_${Date.now()}`, title: "Initial funding", amount, date: "Just now" }],
     };
     setCards((prev) => [card, ...prev]);
     setLabel("");
     setFunding("50000");
     toast.success("Virtual card created", { description: `${card.name} is ready to use` });
+  };
+
+  const updateActiveCard = (patch: Partial<VirtualCard>) => {
+    if (!active) return;
+    setCards((prev) => prev.map((card) => card.id === active.id ? { ...card, ...patch } : card));
   };
 
   const requestPhysicalCard = (e: FormEvent) => {

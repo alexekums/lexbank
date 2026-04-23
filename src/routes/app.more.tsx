@@ -135,3 +135,13 @@ function MorePage() {
     </div>
   );
 }
+
+function ToggleRow({ icon: Icon, label, active, onClick }: { icon: typeof User; label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="flex w-full items-center gap-3 rounded-xl bg-secondary p-3 text-left ring-1 ring-border">
+      <Icon className="h-4 w-4 text-primary" />
+      <span className="flex-1 text-sm font-bold">{label}</span>
+      <span className={`h-6 w-11 rounded-full p-0.5 transition ${active ? "bg-primary" : "bg-muted"}`}><span className={`block h-5 w-5 rounded-full bg-card shadow-sm transition ${active ? "translate-x-5" : ""}`} /></span>
+    </button>
+  );
+}
