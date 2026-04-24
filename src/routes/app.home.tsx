@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDownLeft, ArrowUpRight, Bell, Car, Clapperboard, Copy, Eye, EyeOff, Gamepad2, Gift, Plane, Plus, Receipt, Smartphone, Target, Wifi, X, Zap } from "lucide-react";
