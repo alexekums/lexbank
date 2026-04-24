@@ -4,6 +4,9 @@ export interface LexUser {
   id: string;
   name: string;
   email: string;
+  avatar?: string;
+  phone?: string;
+  kyc?: { idUploaded?: boolean; selfieTaken?: boolean; bvn?: string; idImage?: string; selfieImage?: string };
 }
 
 interface AuthCtx {
@@ -11,7 +14,7 @@ interface AuthCtx {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
-  updateUser: (patch: Partial<Pick<LexUser, "name" | "email">>) => void;
+  updateUser: (patch: Partial<LexUser>) => void;
   logout: () => void;
 }
 
