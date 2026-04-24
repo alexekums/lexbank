@@ -161,6 +161,8 @@ function LexTXPage() {
           <p className={`mt-1 text-xl font-black ${openPnlNgn >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{openPnlNgn >= 0 ? "+" : ""}{formatNGN(openPnlNgn)}</p>
           <p className="mt-1 text-xs text-white/50">Profits settle into Trading Balance when positions close.</p>
         </div>
+        <InvestmentsPanel />
+        <InsurancePanel />
       </main>
 
       <AnimatePresence>{convertOpen && <ConvertSheet holdings={balances.crypto} onClose={() => setConvertOpen(false)} onConfirm={handleConvert} />}</AnimatePresence>
