@@ -238,6 +238,56 @@ function Sheet({ children, onClose }: { children: React.ReactNode; onClose: () =
   return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm"><motion.div initial={{ y: 300 }} animate={{ y: 0 }} exit={{ y: 300 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-3xl bg-white p-5 text-foreground shadow-2xl"><div className="mx-auto mb-4 h-1 w-10 rounded-full bg-rose-200" />{children}</motion.div></motion.div>;
 }
 
+const investmentProducts = [
+  { name: "Mutual Funds", returns: "15.8% p.a.", note: "Balanced naira fund" },
+  { name: "Treasury Bills", returns: "18.2% p.a.", note: "Low-risk government bills" },
+  { name: "Fixed Deposits", returns: "16.5% p.a.", note: "Lock funds for 90–365 days" },
+];
+
+function InvestmentsPanel() {
+  return (
+    <section className="mt-5 rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/10">
+      <div className="mb-3 flex items-center gap-2">
+        <TrendingUp className="h-4 w-4 text-primary" />
+        <h2 className="text-sm font-black">Investments</h2>
+      </div>
+      <div className="space-y-2">
+        {investmentProducts.map((product) => (
+          <div key={product.name} className="flex items-center justify-between gap-3 rounded-xl bg-white/[0.04] p-3 ring-1 ring-white/10">
+            <div>
+              <p className="text-sm font-black">{product.name}</p>
+              <p className="text-[11px] text-white/55">{product.note} · {product.returns}</p>
+            </div>
+            <button onClick={() => toast.success(`${product.name} investment started`, { description: `Simulated return ${product.returns}` })} className="rounded-xl bg-gradient-primary px-3 py-2 text-[11px] font-black text-white shadow-card">Invest Now</button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const insurancePlans = ["Health", "Gadget", "Life", "Travel"];
+
+function InsurancePanel() {
+  return (
+    <section className="mt-5 rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/10">
+      <div className="mb-3 flex items-center gap-2">
+        <Umbrella className="h-4 w-4 text-primary" />
+        <h2 className="text-sm font-black">Microinsurance</h2>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {insurancePlans.map((plan) => (
+          <button key={plan} onClick={() => toast.success(`${plan} cover selected`, { description: "Demo policy quote generated" })} className="rounded-xl bg-white/[0.04] p-3 text-left text-xs font-black text-white ring-1 ring-white/10">
+            <HeartPulse className="mb-2 h-4 w-4 text-primary" />
+            {plan}
+            <p className="mt-1 font-medium text-white/55">From ₦500/month</p>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function SuccessOverlay({ success, onClose }: { success: string | null; onClose: () => void }) {
   return <AnimatePresence>{success && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}><motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.7, opacity: 0 }} className="flex flex-col items-center gap-3 rounded-3xl bg-white px-8 py-7 text-center text-foreground shadow-2xl"><div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-[0_0_30px_rgba(16,185,129,0.6)]"><CheckCircle2 className="h-9 w-9" /></div><p className="text-sm font-bold">{success}</p><p className="text-[11px] text-muted-foreground">Balance updated instantly</p></motion.div></motion.div>}</AnimatePresence>;
 }
