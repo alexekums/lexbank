@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { Camera, ChevronDown, ChevronRight, Fingerprint, IdCard, KeyRound, Lock, LogOut, Mail, Pencil, PiggyBank, Phone as PhoneIcon, ScanFace, Settings, Shield, Sparkles, User } from "lucide-react";
+import { Camera, ChevronDown, ChevronRight, Fingerprint, IdCard, KeyRound, Lock, LogOut, Pencil, PiggyBank, ScanFace, Settings, Shield, Sparkles, User } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -309,6 +309,3 @@ function ToggleRow({ icon: Icon, label, active, onClick }: { icon: typeof User; 
   );
 }
 
-// Suppress unused-import lint by referencing icons used only in JSX above
-void Mail;
-void PhoneIcon;
