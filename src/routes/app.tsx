@@ -31,7 +31,7 @@ function AppShell() {
   const showAiButton = pathname !== "/app/ai";
 
   return (
-    <div className="min-h-screen bg-rose-50/40 pb-24">
+    <div className="min-h-screen bg-background pb-24 dark:bg-background">
       <Outlet />
 
       {showAiButton && (
@@ -61,7 +61,7 @@ function AppShell() {
       )}
 
       <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md px-3 pb-3">
-        <div className="rounded-2xl border border-rose-100 bg-white/95 px-2 py-2 shadow-card backdrop-blur-xl">
+        <div className="rounded-2xl border border-border bg-card/95 px-2 py-2 shadow-card backdrop-blur-xl">
           <ul className="grid grid-cols-5 gap-1">
             {tabs.map((t) => {
               const Icon = t.icon;

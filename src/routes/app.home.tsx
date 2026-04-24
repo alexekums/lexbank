@@ -1,12 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownLeft, ArrowUpRight, Bell, Car, Clapperboard, Copy, Eye, EyeOff, Gamepad2, Gift, PiggyBank, Plane, Plus, Receipt, Smartphone, Target, Wifi, X, Zap } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Bell, Car, ChevronRight, Clapperboard, Copy, Eye, EyeOff, Gamepad2, Gift, PiggyBank, Plane, Plus, Receipt, Smartphone, Target, Wifi, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { formatNGN, formatUSD } from "@/lib/mockData";
 import { balancesActions, useBalances } from "@/lib/balancesStore";
 import { transactionsActions, useTransactions } from "@/lib/transactionsStore";
+import { useSavings } from "@/lib/savingsStore";
 
 export const Route = createFileRoute("/app/home")({
   head: () => ({ meta: [{ title: "Home — LexBank" }] }),
@@ -54,15 +55,9 @@ function HomePage() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [goals, setGoals] = useState([
-    { name: "New Phone", target: 850000, saved: 325000, deadline: "Aug 2026" },
-    { name: "Wedding", target: 3500000, saved: 920000, deadline: "Dec 2026" },
-  ]);
-  const [goalName, setGoalName] = useState("");
-  const [goalAmount, setGoalAmount] = useState("");
-  const [goalDeadline, setGoalDeadline] = useState("");
   const balances = useBalances();
   const transactions = useTransactions();
+  const goals = useSavings();
   const cryptoUsd = balances.crypto.reduce((s, c) => s + c.amount * c.priceUsd, 0);
   const tradingPnlNgn = balances.positions.reduce(
     (s, p) => s + (p.pair.endsWith("NGN") ? p.pnl : p.pnl * 1613.3),
@@ -78,16 +73,6 @@ function HomePage() {
   }, [transactions]);
 
   const openTransfer = () => navigate({ to: "/app/transfers" });
-  const createGoal = (e: FormEvent) => {
-    e.preventDefault();
-    const target = Number(goalAmount);
-    if (!goalName.trim() || target < 1000 || !goalDeadline.trim()) return toast.error("Enter goal name, amount and deadline");
-    setGoals((current) => [{ name: goalName.trim(), target, saved: 0, deadline: goalDeadline.trim() }, ...current]);
-    setGoalName("");
-    setGoalAmount("");
-    setGoalDeadline("");
-    toast.success("Savings goal created");
-  };
 
   return (
     <div className="mx-auto max-w-md">
@@ -183,28 +168,30 @@ function HomePage() {
       <section className="mt-6 px-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-bold tracking-tight">Savings goals</h2>
-          <PiggyBank className="h-4 w-4 text-primary" />
+          <Link to="/app/savings" className="flex items-center gap-1 text-xs font-bold text-primary">
+            <PiggyBank className="h-4 w-4" /> View all
+          </Link>
         </div>
         <div className="space-y-3">
-          {goals.map((goal) => {
+          {goals.slice(0, 2).map((goal) => {
             const progress = Math.min(100, Math.round((goal.saved / goal.target) * 100));
             return (
-              <div key={`${goal.name}-${goal.deadline}`} className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+              <Link key={goal.id} to="/app/savings" className="block rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border transition active:scale-[0.99]">
                 <div className="flex items-start justify-between gap-3">
-                  <div><p className="text-sm font-black">{goal.name}</p><p className="text-[11px] text-muted-foreground">Due {goal.deadline}</p></div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{goal.icon ?? "🎯"}</span>
+                    <div><p className="text-sm font-black">{goal.name}</p><p className="text-[11px] text-muted-foreground">Due {goal.deadline}</p></div>
+                  </div>
                   <p className="text-xs font-black text-primary">{progress}%</p>
                 </div>
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-gradient-primary" style={{ width: `${progress}%` }} /></div>
                 <p className="mt-2 text-[11px] text-muted-foreground">{formatNGN(goal.saved)} saved of {formatNGN(goal.target)}</p>
-              </div>
+              </Link>
             );
           })}
-          <form onSubmit={createGoal} className="grid grid-cols-2 gap-2 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-rose-100">
-            <input value={goalName} onChange={(e) => setGoalName(e.target.value)} placeholder="Goal name" className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold outline-none focus:border-primary" />
-            <input value={goalAmount} onChange={(e) => setGoalAmount(e.target.value.replace(/\D/g, ""))} placeholder="Target amount" inputMode="numeric" className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold outline-none focus:border-primary" />
-            <input value={goalDeadline} onChange={(e) => setGoalDeadline(e.target.value)} placeholder="Deadline" className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold outline-none focus:border-primary" />
-            <button className="rounded-xl bg-gradient-primary px-3 py-2 text-xs font-black text-primary-foreground">Create goal</button>
-          </form>
+          <Link to="/app/savings" className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-card text-sm font-black text-primary shadow-sm ring-1 ring-border transition active:scale-[0.99]">
+            <Plus className="h-4 w-4" /> Open Savings Plans <ChevronRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 

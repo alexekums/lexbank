@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppTransfersRouteImport } from './routes/app.transfers'
+import { Route as AppSavingsRouteImport } from './routes/app.savings'
 import { Route as AppMoreRouteImport } from './routes/app.more'
 import { Route as AppLextxRouteImport } from './routes/app.lextx'
 import { Route as AppHomeRouteImport } from './routes/app.home'
@@ -37,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppTransfersRoute = AppTransfersRouteImport.update({
   id: '/transfers',
   path: '/transfers',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSavingsRoute = AppSavingsRouteImport.update({
+  id: '/savings',
+  path: '/savings',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMoreRoute = AppMoreRouteImport.update({
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/app/home': typeof AppHomeRoute
   '/app/lextx': typeof AppLextxRoute
   '/app/more': typeof AppMoreRoute
+  '/app/savings': typeof AppSavingsRoute
   '/app/transfers': typeof AppTransfersRoute
 }
 export interface FileRoutesByTo {
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/app/home': typeof AppHomeRoute
   '/app/lextx': typeof AppLextxRoute
   '/app/more': typeof AppMoreRoute
+  '/app/savings': typeof AppSavingsRoute
   '/app/transfers': typeof AppTransfersRoute
 }
 export interface FileRoutesById {
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/app/home': typeof AppHomeRoute
   '/app/lextx': typeof AppLextxRoute
   '/app/more': typeof AppMoreRoute
+  '/app/savings': typeof AppSavingsRoute
   '/app/transfers': typeof AppTransfersRoute
 }
 export interface FileRouteTypes {
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/app/home'
     | '/app/lextx'
     | '/app/more'
+    | '/app/savings'
     | '/app/transfers'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/app/home'
     | '/app/lextx'
     | '/app/more'
+    | '/app/savings'
     | '/app/transfers'
   id:
     | '__root__'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/app/home'
     | '/app/lextx'
     | '/app/more'
+    | '/app/savings'
     | '/app/transfers'
   fileRoutesById: FileRoutesById
 }
@@ -169,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/transfers'
       fullPath: '/app/transfers'
       preLoaderRoute: typeof AppTransfersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/savings': {
+      id: '/app/savings'
+      path: '/savings'
+      fullPath: '/app/savings'
+      preLoaderRoute: typeof AppSavingsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/more': {
@@ -215,6 +234,7 @@ interface AppRouteChildren {
   AppHomeRoute: typeof AppHomeRoute
   AppLextxRoute: typeof AppLextxRoute
   AppMoreRoute: typeof AppMoreRoute
+  AppSavingsRoute: typeof AppSavingsRoute
   AppTransfersRoute: typeof AppTransfersRoute
 }
 
@@ -224,6 +244,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppHomeRoute: AppHomeRoute,
   AppLextxRoute: AppLextxRoute,
   AppMoreRoute: AppMoreRoute,
+  AppSavingsRoute: AppSavingsRoute,
   AppTransfersRoute: AppTransfersRoute,
 }
 

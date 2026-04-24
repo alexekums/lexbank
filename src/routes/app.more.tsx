@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Bell, Camera, CreditCard, Fingerprint, HeartPulse, HelpCircle, KeyRound, Lock, LogOut, Settings, Shield, Sparkles, TrendingUp, Umbrella, User } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Bell, Camera, ChevronRight, CreditCard, Fingerprint, HeartPulse, HelpCircle, KeyRound, Lock, LogOut, Mail, Pencil, PiggyBank, Phone as PhoneIcon, Settings, Shield, Sparkles, TrendingUp, Umbrella, User } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -54,6 +54,7 @@ function MorePage() {
   const [pin, setPin] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [twoFa, setTwoFa] = useState(true);
+  const [editingProfile, setEditingProfile] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -68,6 +69,7 @@ function MorePage() {
   const saveProfile = (e: FormEvent) => {
     e.preventDefault();
     updateUser({ name: name.trim() || user?.name, email: email.trim() || user?.email });
+    setEditingProfile(false);
     toast.success("Profile updated");
   };
 
@@ -93,15 +95,15 @@ function MorePage() {
 
   return (
     <div className="mx-auto max-w-md">
-      <header className="rounded-b-3xl bg-gradient-primary px-5 pb-7 pt-10 text-white shadow-card">
-        <div className="flex items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 text-xl font-black ring-1 ring-white/30">
+      <header className="rounded-b-3xl bg-gradient-primary px-5 pb-8 pt-10 text-white shadow-card">
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 text-2xl font-black ring-1 ring-white/30">
             {user?.name?.[0]?.toUpperCase() ?? "L"}
           </div>
-          <div>
-            <p className="text-lg font-bold">{user?.name}</p>
-            <p className="text-xs text-white/80">{user?.email}</p>
-            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold ring-1 ring-white/30">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-lg font-black">{user?.name}</p>
+            <p className="truncate text-xs text-white/80">{user?.email}</p>
+            <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold ring-1 ring-white/30">
               ✨ LexBank Plus
             </span>
           </div>
@@ -109,11 +111,52 @@ function MorePage() {
       </header>
 
       <div className="space-y-5 px-5 pt-5">
-        <form onSubmit={saveProfile} className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
-          <div className="mb-3 flex items-center gap-3"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-lg font-black text-primary">{name[0]?.toUpperCase() ?? "L"}</span><div><h2 className="text-sm font-black">Complete Profile</h2><p className="text-[11px] text-muted-foreground">Avatar, name, phone and email</p></div></div>
-          <div className="space-y-3"><button type="button" onClick={() => toast.success("Avatar updated in demo mode")} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-secondary text-xs font-black text-primary"><Camera className="h-4 w-4" />Upload avatar</button><div className="float-field"><input value={name} onChange={(e) => setName(e.target.value)} placeholder=" " /><label>Full name</label></div><div className="float-field"><input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder=" " /><label>Phone number</label></div><div className="float-field"><input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder=" " /><label>Email address</label></div></div>
-          <button className="btn-shine mt-4 h-11 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card">Save profile</button>
-        </form>
+        <section className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-lg font-black text-primary">{name[0]?.toUpperCase() ?? "L"}</span>
+              <div>
+                <h2 className="text-sm font-black">Profile</h2>
+                <p className="text-[11px] text-muted-foreground">{editingProfile ? "Update your details" : "Personal information"}</p>
+              </div>
+            </div>
+            {!editingProfile && (
+              <button type="button" onClick={() => setEditingProfile(true)} className="flex items-center gap-1 rounded-xl bg-secondary px-3 py-2 text-[11px] font-black text-primary ring-1 ring-border">
+                <Pencil className="h-3 w-3" /> Edit
+              </button>
+            )}
+          </div>
+
+          {editingProfile ? (
+            <form onSubmit={saveProfile} className="space-y-3">
+              <button type="button" onClick={() => toast.success("Avatar updated in demo mode")} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-secondary text-xs font-black text-primary"><Camera className="h-4 w-4" />Upload avatar</button>
+              <div className="float-field"><input value={name} onChange={(e) => setName(e.target.value)} placeholder=" " /><label>Full name</label></div>
+              <div className="float-field"><input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder=" " /><label>Phone number</label></div>
+              <div className="float-field"><input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder=" " /><label>Email address</label></div>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => { setName(user?.name ?? ""); setEmail(user?.email ?? ""); setEditingProfile(false); }} className="h-11 flex-1 rounded-xl bg-secondary text-sm font-black text-foreground ring-1 ring-border">Cancel</button>
+                <button type="submit" className="btn-shine h-11 flex-1 rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card">Save profile</button>
+              </div>
+            </form>
+          ) : (
+            <ul className="space-y-2">
+              <ProfileRow icon={User} label="Full name" value={user?.name ?? "—"} />
+              <ProfileRow icon={PhoneIcon} label="Phone" value={phone} />
+              <ProfileRow icon={Mail} label="Email" value={user?.email ?? "—"} />
+            </ul>
+          )}
+        </section>
+
+        <Link to="/app/savings" className="flex items-center justify-between rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border transition active:scale-[0.99]">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary"><PiggyBank className="h-5 w-5" /></span>
+            <div>
+              <p className="text-sm font-black">Savings Plans</p>
+              <p className="text-[11px] text-muted-foreground">Manage your savings goals</p>
+            </div>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
 
         <form onSubmit={verifyKyc} className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
           <div className="mb-3 flex items-center gap-2"><Shield className="h-4 w-4 text-primary" /><h2 className="text-sm font-black">KYC Verification</h2></div>
@@ -145,7 +188,7 @@ function MorePage() {
 
         <button
           onClick={handleLogout}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3 text-sm font-semibold text-red-500 shadow-sm ring-1 ring-rose-100 transition hover:bg-red-50"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-card py-3 text-sm font-semibold text-destructive shadow-sm ring-1 ring-border transition hover:bg-secondary"
         >
           <LogOut className="h-4 w-4" /> Sign out
         </button>
@@ -165,5 +208,17 @@ function ToggleRow({ icon: Icon, label, active, onClick }: { icon: typeof User; 
       <span className="flex-1 text-sm font-bold">{label}</span>
       <span className={`h-6 w-11 rounded-full p-0.5 transition ${active ? "bg-primary" : "bg-muted"}`}><span className={`block h-5 w-5 rounded-full bg-card shadow-sm transition ${active ? "translate-x-5" : ""}`} /></span>
     </button>
+  );
+}
+
+function ProfileRow({ icon: Icon, label, value }: { icon: typeof User; label: string; value: string }) {
+  return (
+    <li className="flex items-center gap-3 rounded-xl bg-secondary p-3 ring-1 ring-border">
+      <Icon className="h-4 w-4 text-primary" />
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
+        <p className="truncate text-sm font-black text-foreground">{value}</p>
+      </div>
+    </li>
   );
 }
