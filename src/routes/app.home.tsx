@@ -164,36 +164,6 @@ function HomePage() {
       </section>
 
       <section className="mt-6 px-5">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold tracking-tight">Savings goals</h2>
-          <Link to="/app/savings" className="flex items-center gap-1 text-xs font-bold text-primary">
-            <PiggyBank className="h-4 w-4" /> View all
-          </Link>
-        </div>
-        <div className="space-y-3">
-          {goals.slice(0, 2).map((goal) => {
-            const progress = Math.min(100, Math.round((goal.saved / goal.target) * 100));
-            return (
-              <Link key={goal.id} to="/app/savings" className="block rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border transition active:scale-[0.99]">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{goal.icon ?? "🎯"}</span>
-                    <div><p className="text-sm font-black">{goal.name}</p><p className="text-[11px] text-muted-foreground">Due {goal.deadline}</p></div>
-                  </div>
-                  <p className="text-xs font-black text-primary">{progress}%</p>
-                </div>
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-gradient-primary" style={{ width: `${progress}%` }} /></div>
-                <p className="mt-2 text-[11px] text-muted-foreground">{formatNGN(goal.saved)} saved of {formatNGN(goal.target)}</p>
-              </Link>
-            );
-          })}
-          <Link to="/app/savings" className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-card text-sm font-black text-primary shadow-sm ring-1 ring-border transition active:scale-[0.99]">
-            <Plus className="h-4 w-4" /> Open Savings Plans <ChevronRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
-
-      <section className="mt-6 px-5">
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
             <Gift className="mb-3 h-5 w-5 text-primary" />
