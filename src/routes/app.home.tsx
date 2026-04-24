@@ -1,13 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownLeft, ArrowUpRight, Bell, Car, ChevronRight, Clapperboard, Copy, Eye, EyeOff, Gamepad2, Gift, PiggyBank, Plane, Plus, Receipt, Smartphone, Target, Wifi, X, Zap } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Bell, Car, Clapperboard, Copy, Eye, EyeOff, Gamepad2, Gift, Plane, Plus, Receipt, Smartphone, Target, Wifi, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { formatNGN, formatUSD } from "@/lib/mockData";
 import { balancesActions, useBalances } from "@/lib/balancesStore";
 import { transactionsActions, useTransactions } from "@/lib/transactionsStore";
-import { useSavings } from "@/lib/savingsStore";
 
 export const Route = createFileRoute("/app/home")({
   head: () => ({ meta: [{ title: "Home — LexBank" }] }),
@@ -57,7 +56,6 @@ function HomePage() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const balances = useBalances();
   const transactions = useTransactions();
-  const goals = useSavings();
   const cryptoUsd = balances.crypto.reduce((s, c) => s + c.amount * c.priceUsd, 0);
   const tradingPnlNgn = balances.positions.reduce(
     (s, p) => s + (p.pair.endsWith("NGN") ? p.pnl : p.pnl * 1613.3),
