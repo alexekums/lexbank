@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Circle,
   DraftingCompass,
+  HeartPulse,
   Layers,
   MessageCircle,
   MoveDiagonal,
@@ -18,6 +19,7 @@ import {
   Send,
   TrendingDown,
   TrendingUp,
+  Umbrella,
   Wallet,
 } from "lucide-react";
 import { formatNGN, formatUSD, initialForex, USD_NGN_RATE, type ForexPair } from "@/lib/mockData";
