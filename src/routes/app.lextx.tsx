@@ -134,6 +134,9 @@ function LexTXPage() {
           <button onClick={() => setFundOpen("fund")} className="btn-shine h-11 rounded-xl bg-white text-sm font-black text-primary shadow-card">Fund Trading</button>
           <button onClick={() => setFundOpen("withdraw")} className="h-11 rounded-xl bg-white/10 text-sm font-bold text-white ring-1 ring-white/20">Withdraw</button>
         </div>
+        <button onClick={() => setDepositOpen(true)} className="btn-shine relative mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-primary text-sm font-black text-white shadow-[0_0_18px_rgba(255,75,75,0.6)]">
+          <ArrowDownLeft className="h-4 w-4" />Deposit to Crypto Wallet
+        </button>
       </header>
 
       <div className="sticky top-0 z-20 bg-red-950/90 px-5 py-3 backdrop-blur-xl">
