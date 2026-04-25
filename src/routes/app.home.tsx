@@ -433,10 +433,10 @@ function NotificationsSheet({ onClose }: { onClose: () => void }) {
 
 function MiniCard({ label, value, accent, positive }: { label: string; value: string; accent: string; positive?: boolean }) {
   return (
-    <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-rose-100">
+    <div className="rounded-2xl bg-card p-3 shadow-sm ring-1 ring-border">
       <div className={`mb-2 h-1.5 w-8 rounded-full bg-gradient-to-r ${accent}`} />
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={`mt-0.5 truncate text-sm font-bold ${positive ? "text-emerald-600" : ""}`}>{value}</p>
+      <p className={`mt-0.5 truncate text-sm font-bold text-foreground ${positive ? "text-emerald-600 dark:text-emerald-400" : ""}`}>{value}</p>
     </div>
   );
 }
