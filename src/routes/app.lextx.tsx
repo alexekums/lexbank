@@ -169,11 +169,12 @@ function LexTXPage() {
           <p className="mt-1 text-xs text-white/50">Profits settle into Trading Balance when positions close.</p>
         </div>
         <InvestmentsPanel />
-        <InsurancePanel />
       </main>
 
       <AnimatePresence>{convertOpen && <ConvertSheet holdings={balances.crypto} onClose={() => setConvertOpen(false)} onConfirm={handleConvert} />}</AnimatePresence>
       <AnimatePresence>{fundOpen && <FundsSheet mode={fundOpen} max={fundOpen === "fund" ? balances.ngn : balances.tradingNgn} onClose={() => setFundOpen(null)} onConfirm={(amount) => handleFundTransfer(fundOpen, amount)} />}</AnimatePresence>
+      <AnimatePresence>{depositOpen && <DepositSheet holdings={balances.crypto} onClose={() => setDepositOpen(false)} onConfirm={() => { setDepositOpen(false); flashSuccess("Crypto deposit confirmed"); }} />}</AnimatePresence>
+      <AnimatePresence>{investing && <InvestmentSheet product={investing} max={balances.ngn} onClose={() => setInvesting(null)} onConfirm={(amount, days) => { setInvesting(null); flashSuccess(`Invested ${formatNGN(amount)} for ${days}d`); toast.success(`${investing.name} confirmed`, { description: `Reference INV-${Date.now().toString().slice(-6)}` }); }} />}</AnimatePresence>
       <AnimatePresence>{tradeTicket && <TradeSheet ticket={tradeTicket} tradingBalance={balances.tradingNgn} onClose={() => setTradeTicket(null)} onConfirm={handleOpenTrade} />}</AnimatePresence>
       <SuccessOverlay success={success} onClose={() => setSuccess(null)} />
     </div>
