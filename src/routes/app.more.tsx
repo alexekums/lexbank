@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { Camera, ChevronDown, ChevronRight, Fingerprint, HeartPulse, IdCard, KeyRound, Lock, LogOut, Pencil, PiggyBank, ScanFace, Settings, Shield, Sparkles, User } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Camera, ChevronDown, ChevronRight, Copy, Fingerprint, Gift, IdCard, KeyRound, Lock, LogOut, Pencil, PiggyBank, ScanFace, Settings, Share2, Shield, Sparkles, User } from "lucide-react";
+import { useRef, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { themeActions, useTheme } from "@/lib/themeStore";
 
 export const Route = createFileRoute("/app/more")({
   head: () => ({ meta: [{ title: "More — LexBank" }] }),
@@ -33,12 +34,11 @@ function MorePage() {
   const [password, setPassword] = useState("");
   const [pin, setPin] = useState("");
 
-  const [darkMode, setDarkMode] = useState(false);
+  const theme = useTheme();
+  const darkMode = theme === "dark";
   const [twoFa, setTwoFa] = useState(true);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
+  const [referralEarnings] = useState(8000);
+  const [referralCount] = useState(8);
 
   const handleLogout = () => {
     logout();
@@ -109,6 +109,20 @@ function MorePage() {
 
   const toggleSection = (next: Section) => setSection((curr) => (curr === next ? null : next));
   const avatarSrc = avatarPreview ?? user?.avatar;
+
+  const copyReferral = () => {
+    navigator.clipboard?.writeText("LEX-4521");
+    toast.success("Referral code copied", { description: "Share with friends and earn ₦1,000 each" });
+  };
+
+  const shareReferral = async () => {
+    const text = "Join me on LexBank — use my code LEX-4521 to sign up. Let's bank!";
+    if (typeof navigator !== "undefined" && (navigator as any).share) {
+      try { await (navigator as any).share({ title: "LexBank", text }); return; } catch {}
+    }
+    navigator.clipboard?.writeText(text);
+    toast.success("Invite copied — paste anywhere to share");
+  };
 
   return (
     <div className="mx-auto max-w-md">
@@ -182,16 +196,33 @@ function MorePage() {
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </Link>
 
-        <Link to="/app/insurance" className="flex items-center justify-between rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border transition active:scale-[0.99]">
+        <section className="rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary"><HeartPulse className="h-5 w-5" /></span>
-            <div>
-              <p className="text-sm font-black">Microinsurance</p>
-              <p className="text-[11px] text-muted-foreground">Health, gadget, life & travel cover</p>
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary"><Gift className="h-5 w-5" /></span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-black">Refer &amp; Earn</p>
+              <p className="text-[11px] text-muted-foreground">Earn ₦1,000 for every active friend you invite.</p>
             </div>
           </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="rounded-xl bg-secondary p-3 ring-1 ring-border">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Friends joined</p>
+              <p className="mt-1 text-lg font-black text-foreground">{referralCount}</p>
+            </div>
+            <div className="rounded-xl bg-secondary p-3 ring-1 ring-border">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Earnings</p>
+              <p className="mt-1 text-lg font-black text-primary">₦{referralEarnings.toLocaleString()}</p>
+            </div>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button onClick={copyReferral} className="flex h-10 items-center justify-center gap-1.5 rounded-xl bg-secondary text-xs font-black text-primary ring-1 ring-border">
+              <Copy className="h-3.5 w-3.5" /> LEX-4521
+            </button>
+            <button onClick={shareReferral} className="btn-shine flex h-10 items-center justify-center gap-1.5 rounded-xl bg-gradient-primary text-xs font-black text-primary-foreground shadow-card">
+              <Share2 className="h-3.5 w-3.5" /> Share invite
+            </button>
+          </div>
+        </section>
 
         <SectionCard
           icon={Shield}
@@ -243,7 +274,7 @@ function MorePage() {
           onToggle={() => toggleSection("settings")}
         >
           <div className="space-y-3">
-            <ToggleRow icon={Sparkles} label="Dark Mode" active={darkMode} onClick={() => setDarkMode((v) => !v)} />
+            <ToggleRow icon={Sparkles} label="Dark Mode" active={darkMode} onClick={() => themeActions.toggle()} />
             <ToggleRow icon={Fingerprint} label="Two-factor auth" active={twoFa} onClick={() => setTwoFa((v) => !v)} />
           </div>
         </SectionCard>

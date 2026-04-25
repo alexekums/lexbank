@@ -9,11 +9,19 @@ export type SavingsGoal = {
   icon?: string;
 };
 
+export type RoundupConfig = {
+  enabled: boolean;
+  goalId: string | null;
+  monthSaved: number;
+};
+
 let goals: SavingsGoal[] = [
   { id: "g1", name: "New Phone", target: 850000, saved: 325000, deadline: "Aug 2026", icon: "📱" },
   { id: "g2", name: "Wedding", target: 3500000, saved: 920000, deadline: "Dec 2026", icon: "💍" },
   { id: "g3", name: "Emergency Fund", target: 1000000, saved: 480000, deadline: "Jun 2026", icon: "🛡️" },
 ];
+
+let roundup: RoundupConfig = { enabled: false, goalId: "g1", monthSaved: 1850 };
 
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
@@ -24,6 +32,9 @@ const subscribe = (l: () => void) => {
 const getSnapshot = () => goals;
 
 export const useSavings = () => useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+
+const getRoundupSnapshot = () => roundup;
+export const useRoundup = () => useSyncExternalStore(subscribe, getRoundupSnapshot, getRoundupSnapshot);
 
 export const savingsActions = {
   create(input: Omit<SavingsGoal, "id" | "saved"> & { saved?: number }) {
@@ -50,5 +61,9 @@ export const savingsActions = {
   },
   get(id: string) {
     return goals.find((g) => g.id === id);
+  },
+  setRoundup(patch: Partial<RoundupConfig>) {
+    roundup = { ...roundup, ...patch };
+    emit();
   },
 };

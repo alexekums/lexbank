@@ -86,7 +86,7 @@ function CardsPage() {
   };
 
   return (
-    <div className="mx-auto min-h-screen max-w-md pb-8">
+    <div className="mx-auto min-h-screen max-w-md bg-background pb-8">
       <header className="rounded-b-3xl bg-gradient-primary px-5 pb-6 pt-10 text-primary-foreground shadow-card">
         <div className="flex items-center justify-between">
           <div>
@@ -105,19 +105,19 @@ function CardsPage() {
 
       <main className="space-y-5 px-5 pt-5">
         {active && (
-          <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="overflow-hidden rounded-2xl bg-foreground p-5 text-background shadow-card">
+          <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="overflow-hidden rounded-2xl bg-zinc-900 p-5 text-white shadow-card dark:bg-zinc-950 dark:ring-1 dark:ring-white/10">
             <div className="flex items-center justify-between">
               <Sparkles className="h-5 w-5 text-primary-glow" />
-              <p className="text-xs font-bold uppercase tracking-widest text-background/60">Virtual</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-white/60">Virtual</p>
             </div>
             <p className="mt-8 font-mono text-lg font-black tracking-wider">{active.number}</p>
             <div className="mt-5 flex items-end justify-between">
               <div>
-                <p className="text-[10px] uppercase text-background/55">Card name</p>
+                <p className="text-[10px] uppercase text-white/55">Card name</p>
                 <p className="text-sm font-bold">{active.name}</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] uppercase text-background/55">Balance</p>
+                <p className="text-[10px] uppercase text-white/55">Balance</p>
                 <p className="text-sm font-black">{formatNGN(active.balance)}</p>
               </div>
             </div>
