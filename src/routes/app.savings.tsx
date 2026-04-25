@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, PiggyBank, Plus, Target, Trash2, X } from "lucide-react";
+import { ArrowLeft, Coins, PiggyBank, Plus, Sparkles, Target, Trash2, X } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { formatNGN } from "@/lib/mockData";
-import { savingsActions, useSavings, type SavingsGoal } from "@/lib/savingsStore";
+import { savingsActions, useRoundup, useSavings, type SavingsGoal } from "@/lib/savingsStore";
 import { balancesActions, useBalances } from "@/lib/balancesStore";
 
 export const Route = createFileRoute("/app/savings")({
@@ -16,6 +16,7 @@ const ICONS = ["🎯", "📱", "💍", "🏠", "🚗", "✈️", "🎓", "🛡�
 
 function SavingsPage() {
   const goals = useSavings();
+  const roundup = useRoundup();
   const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
   const [active, setActive] = useState<SavingsGoal | null>(null);
@@ -37,6 +38,45 @@ function SavingsPage() {
       </header>
 
       <section className="px-5 pt-5">
+        <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-card to-card p-4 shadow-sm ring-1 ring-border">
+          <div className="flex items-start gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-primary text-white shadow-card"><Coins className="h-5 w-5" /></span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-black text-foreground">Spend to Save</p>
+                <button
+                  onClick={() => { savingsActions.setRoundup({ enabled: !roundup.enabled }); toast.success(roundup.enabled ? "Spend to Save disabled" : "Spend to Save enabled"); }}
+                  aria-pressed={roundup.enabled}
+                  className={`h-6 w-11 rounded-full p-0.5 transition ${roundup.enabled ? "bg-primary" : "bg-muted"}`}
+                >
+                  <span className={`block h-5 w-5 rounded-full bg-card shadow-sm transition ${roundup.enabled ? "translate-x-5" : ""}`} />
+                </button>
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">Round up every transaction to the nearest ₦100 and save the difference automatically.</p>
+            </div>
+          </div>
+          {roundup.enabled && (
+            <div className="mt-3 space-y-2">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Round into goal</label>
+                <select
+                  value={roundup.goalId ?? ""}
+                  onChange={(e) => savingsActions.setRoundup({ goalId: e.target.value })}
+                  className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none focus:border-primary focus:shadow-glow"
+                >
+                  {goals.map((g) => <option key={g.id} value={g.id}>{g.icon ?? "🎯"} {g.name}</option>)}
+                </select>
+              </div>
+              <div className="flex items-center justify-between rounded-xl bg-secondary p-3 ring-1 ring-border">
+                <div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /><span className="text-[11px] font-bold text-muted-foreground">Saved this month</span></div>
+                <span className="text-sm font-black text-primary">{formatNGN(roundup.monthSaved)}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="px-5 pt-4">
         {goals.length === 0 ? (
           <div className="rounded-2xl bg-card p-6 text-center shadow-sm ring-1 ring-border">
             <PiggyBank className="mx-auto mb-3 h-8 w-8 text-primary" />
