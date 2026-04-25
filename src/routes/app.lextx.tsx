@@ -9,17 +9,18 @@ import {
   ArrowUpRight,
   CheckCircle2,
   Circle,
+  Copy,
   DraftingCompass,
-  HeartPulse,
   Layers,
   MessageCircle,
   MoveDiagonal,
+  QrCode,
   Repeat,
   Square,
   Send,
+  ShieldCheck,
   TrendingDown,
   TrendingUp,
-  Umbrella,
   Wallet,
 } from "lucide-react";
 import { formatNGN, formatUSD, initialForex, USD_NGN_RATE, type ForexPair } from "@/lib/mockData";
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/app/lextx")({
 
 type Tab = "crypto" | "forex" | "open" | "closed";
 type TradeTicket = { pair: ForexPair; side: "BUY" | "SELL" };
+type InvestmentProduct = { name: string; returns: string; note: string; rate: number; risk: "Low" | "Medium" | "High" };
 
 function LexTXPage() {
   const balances = useBalances();
@@ -39,6 +41,8 @@ function LexTXPage() {
   const [tab, setTab] = useState<Tab>("crypto");
   const [convertOpen, setConvertOpen] = useState(false);
   const [fundOpen, setFundOpen] = useState<"fund" | "withdraw" | null>(null);
+  const [depositOpen, setDepositOpen] = useState(false);
+  const [investing, setInvesting] = useState<InvestmentProduct | null>(null);
   const [tradeTicket, setTradeTicket] = useState<TradeTicket | null>(null);
   const [selectedPair, setSelectedPair] = useState<ForexPair | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
