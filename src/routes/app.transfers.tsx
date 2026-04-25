@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeftRight, Building2, CheckCircle2, Clock, Globe2, Landmark, Loader2, Repeat, Search, Users, X } from "lucide-react";
+import { ArrowLeftRight, Building2, CheckCircle2, Clock, Globe2, Landmark, Loader2, Plus, Repeat, Search, UserPlus, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { formatNGN } from "@/lib/mockData";
 import { balancesActions, useBalances } from "@/lib/balancesStore";
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/app/transfers")({
   component: TransfersPage,
 });
 
-const beneficiaries = [
+const initialBeneficiaries = [
   { id: "b1", name: "Tunde A.", bank: "GTBank", initials: "TA" },
   { id: "b2", name: "Amaka O.", bank: "Access", initials: "AO" },
   { id: "b3", name: "Kelvin", bank: "LexBank", initials: "K" },
@@ -50,6 +50,9 @@ function TransfersPage() {
   const [submitting, setSubmitting] = useState(false);
   const [receipt, setReceipt] = useState<{ ref: string; name: string; bank: string; tail: string; amount: number; narration: string; mode: Mode } | null>(null);
   const [last, setLast] = useState<LastTransfer | null>(loadLast());
+  const [bens, setBens] = useState(initialBeneficiaries);
+  const [addBenOpen, setAddBenOpen] = useState(false);
+  const [newBen, setNewBen] = useState({ name: "", nick: "", bank: "LexBank", account: "" });
 
   const activeBank = mode === "same" ? "LexBank" : mode === "international" ? intlBank || "International bank" : bank;
   const filteredBanks = useMemo(() => banks.filter((b) => b.toLowerCase().includes(bankSearch.toLowerCase().trim())), [bankSearch]);
@@ -118,6 +121,16 @@ function TransfersPage() {
   const closeReceipt = () => { setReceipt(null); resetForm(); };
   const repeatFromReceipt = () => { setReceipt(null); setMode("repeat"); };
 
+  const submitBeneficiary = (e: FormEvent) => {
+    e.preventDefault();
+    if (!newBen.name.trim() || newBen.account.replace(/\D/g, "").length < 10) return toast.error("Enter name and 10-digit account");
+    const initials = (newBen.nick || newBen.name).trim().split(/\s+/).map((s) => s[0]).join("").slice(0, 2).toUpperCase();
+    setBens((prev) => [{ id: `b_${Date.now()}`, name: newBen.nick.trim() || newBen.name.trim(), bank: newBen.bank, initials }, ...prev]);
+    toast.success("Beneficiary added");
+    setNewBen({ name: "", nick: "", bank: "LexBank", account: "" });
+    setAddBenOpen(false);
+  };
+
   const tabs: { icon: typeof Building2; label: string; value: Mode }[] = [
     { icon: Building2, label: "Same", value: "same" },
     { icon: Landmark, label: "Local bank", value: "local" },
@@ -149,10 +162,13 @@ function TransfersPage() {
       <section className="px-5 pt-6">
         <div className="mb-3 flex items-center gap-2">
           <Users className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-bold tracking-tight text-foreground">Beneficiaries</h2>
+          <h2 className="flex-1 text-sm font-bold tracking-tight text-foreground">Beneficiaries</h2>
+          <button onClick={() => setAddBenOpen(true)} className="flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-[11px] font-black text-primary ring-1 ring-border">
+            <Plus className="h-3 w-3" /> Add Beneficiary
+          </button>
         </div>
         <ul className="flex gap-3 overflow-x-auto pb-2">
-          {beneficiaries.map((b) => (
+          {bens.map((b) => (
             <li key={b.id} className="flex w-16 flex-shrink-0 flex-col items-center gap-1.5">
               <button onClick={() => { setMode(b.bank === "LexBank" ? "same" : "local"); setBank(b.bank === "LexBank" ? banks[0] : (banks.find((x) => x.toLowerCase().includes(b.bank.toLowerCase())) ?? banks[0])); setAccount("0123456789"); }} className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-sm font-bold text-white shadow-card transition active:scale-95">
                 {b.initials}
@@ -169,9 +185,15 @@ function TransfersPage() {
           <div className="mb-3 flex items-center gap-2">
             {mode === "same" ? <Building2 className="h-4 w-4 text-primary" /> : mode === "international" ? <Globe2 className="h-4 w-4 text-primary" /> : mode === "repeat" ? <Repeat className="h-4 w-4 text-primary" /> : <ArrowLeftRight className="h-4 w-4 text-primary" />}
             <h2 className="text-sm font-bold tracking-tight text-foreground">
-              {mode === "same" ? "let's bank Internal Transfer" : mode === "international" ? "International / Domiciliary transfer" : mode === "repeat" ? (last ? `Repeat last transfer to ${last.name}` : "No previous transfer to repeat") : mode === "schedule" ? "Schedule a transfer" : "Local bank transfer"}
+              {mode === "same" ? "LexBank Internal Transfer" : mode === "international" ? "International / Domiciliary transfer" : mode === "repeat" ? (last ? `Repeat last transfer to ${last.name}` : "No previous transfer to repeat") : mode === "schedule" ? "Schedule a transfer" : "Local bank transfer"}
             </h2>
           </div>
+
+          {mode === "same" && (
+            <button type="button" onClick={() => setAddBenOpen(true)} className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl bg-secondary py-2.5 text-xs font-black text-primary ring-1 ring-border transition active:scale-[0.99]">
+              <UserPlus className="h-3.5 w-3.5" /> + Add Beneficiary
+            </button>
+          )}
 
           {mode === "international" ? (
             <div className="space-y-3">
@@ -249,6 +271,35 @@ function TransfersPage() {
                 <button onClick={closeReceipt} className="btn-shine h-12 rounded-xl bg-gradient-primary text-sm font-black text-white shadow-card">Done</button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {addBenOpen && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={() => setAddBenOpen(false)}>
+            <motion.form onSubmit={submitBeneficiary} initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 80 }} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-2xl ring-1 ring-border">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-primary">Beneficiary</p>
+                  <h3 className="text-lg font-black text-foreground">Add new beneficiary</h3>
+                </div>
+                <button type="button" onClick={() => setAddBenOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+              </div>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Bank</label>
+                  <select value={newBen.bank} onChange={(e) => setNewBen((b) => ({ ...b, bank: e.target.value }))} className="h-12 w-full rounded-xl border border-border bg-card px-3 text-sm font-semibold text-foreground outline-none focus:border-primary focus:shadow-glow">
+                    <option value="LexBank">LexBank (Internal)</option>
+                    {banks.map((b) => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+                <div className="float-field"><input value={newBen.account} onChange={(e) => setNewBen((b) => ({ ...b, account: e.target.value.replace(/\D/g, "").slice(0, 10) }))} inputMode="numeric" placeholder=" " /><label>Account number</label></div>
+                <div className="float-field"><input value={newBen.name} onChange={(e) => setNewBen((b) => ({ ...b, name: e.target.value }))} placeholder=" " /><label>Account name</label></div>
+                <div className="float-field"><input value={newBen.nick} onChange={(e) => setNewBen((b) => ({ ...b, nick: e.target.value }))} placeholder=" " /><label>Nickname (optional)</label></div>
+              </div>
+              <button className="btn-shine mt-5 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card">Save beneficiary</button>
+            </motion.form>
           </motion.div>
         )}
       </AnimatePresence>
