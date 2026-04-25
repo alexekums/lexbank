@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { Camera, ChevronDown, ChevronRight, Fingerprint, IdCard, KeyRound, Lock, LogOut, Pencil, PiggyBank, ScanFace, Settings, Shield, Sparkles, User } from "lucide-react";
+import { Camera, ChevronDown, ChevronRight, Fingerprint, HeartPulse, IdCard, KeyRound, Lock, LogOut, Pencil, PiggyBank, ScanFace, Settings, Shield, Sparkles, User } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -177,6 +177,17 @@ function MorePage() {
             <div>
               <p className="text-sm font-black">Savings Plans</p>
               <p className="text-[11px] text-muted-foreground">Manage your savings goals</p>
+            </div>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+
+        <Link to="/app/insurance" className="flex items-center justify-between rounded-2xl bg-card p-4 shadow-sm ring-1 ring-border transition active:scale-[0.99]">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary"><HeartPulse className="h-5 w-5" /></span>
+            <div>
+              <p className="text-sm font-black">Microinsurance</p>
+              <p className="text-[11px] text-muted-foreground">Health, gadget, life & travel cover</p>
             </div>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
