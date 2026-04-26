@@ -8,6 +8,7 @@ import { formatNGN, formatUSD } from "@/lib/mockData";
 import { balancesActions, useBalances } from "@/lib/balancesStore";
 import { transactionsActions, useTransactions } from "@/lib/transactionsStore";
 import { useSavings } from "@/lib/savingsStore";
+import { DomiciliaryAccounts } from "@/components/DomiciliaryAccounts";
 
 export const Route = createFileRoute("/app/home")({
   head: () => ({ meta: [{ title: "Home — LexBank" }] }),
@@ -157,6 +158,10 @@ function HomePage() {
           <MiniCard label="P&L" value={show ? formatNGN(tradingPnlNgn) : "₦••••"} accent="from-primary to-primary-glow" positive={tradingPnlNgn >= 0} />
         </div>
       </section>
+
+      <div className="mt-6">
+        <DomiciliaryAccounts />
+      </div>
 
       <section className="mt-6 px-5">
         <h2 className="mb-3 text-sm font-bold tracking-tight">Quick services</h2>
