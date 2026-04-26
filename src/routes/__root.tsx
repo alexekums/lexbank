@@ -31,14 +31,18 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "LexBank" },
+      { name: "description", content: "Nigerian fully digital banking integrated with Forex and Crypto trading" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "LexBank" },
+      { property: "og:description", content: "Nigerian fully digital banking integrated with Forex and Crypto trading" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "LexBank" },
+      { name: "twitter:description", content: "Nigerian fully digital banking integrated with Forex and Crypto trading" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9d7f0972-adc3-450b-a5ff-e496930cfc81" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9d7f0972-adc3-450b-a5ff-e496930cfc81" },
     ],
     links: [
       {
