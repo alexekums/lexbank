@@ -278,37 +278,57 @@ function DepositSheet({ holdings, onClose, onConfirm }: { holdings: ReturnType<t
   const [symbol, setSymbol] = useState(holdings[0]?.symbol ?? "BTC");
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<"bank" | "card" | "wallet">("bank");
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState<{ ref: string } | null>(null);
   const address = useMemo(() => `${symbol}-${Math.random().toString(36).slice(2, 10)}${Math.random().toString(36).slice(2, 10)}`, [symbol]);
   const numeric = parseFloat(amount) || 0;
+  const submit = () => {
+    setSubmitting(true);
+    setTimeout(() => {
+      setSubmitting(false);
+      setDone({ ref: `CRY-${Date.now().toString().slice(-8)}` });
+    }, 900);
+  };
   return (
     <Sheet onClose={onClose}>
-      <h3 className="text-base font-black">Deposit to Crypto Wallet</h3>
+      {done ? (
+        <div className="text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-[0_0_30px_rgba(16,185,129,0.55)]"><CheckCircle2 className="h-8 w-8" /></div>
+          <h3 className="mt-3 text-lg font-black text-foreground">Deposit confirmed</h3>
+          <p className="text-xs text-muted-foreground">{formatNGN(numeric)} · {symbol} · Ref {done.ref}</p>
+          <button onClick={onConfirm} className="btn-shine mt-5 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card">Done</button>
+        </div>
+      ) : (
+      <>
+      <h3 className="text-base font-black text-foreground">Deposit to Crypto Wallet</h3>
       <p className="mt-1 text-xs text-muted-foreground">Buy crypto instantly or fund from an external wallet.</p>
       <label className="mt-4 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Choose asset</label>
       <div className="mt-2 grid grid-cols-3 gap-2">
         {holdings.map((c) => (
-          <button key={c.symbol} onClick={() => setSymbol(c.symbol)} className={`rounded-xl py-2 text-xs font-black ${symbol === c.symbol ? "bg-gradient-primary text-white shadow-card" : "bg-rose-50 text-primary"}`}>{c.symbol}</button>
+          <button key={c.symbol} onClick={() => setSymbol(c.symbol)} className={`rounded-xl py-2 text-xs font-black ${symbol === c.symbol ? "bg-gradient-primary text-primary-foreground shadow-card" : "bg-secondary text-primary"}`}>{c.symbol}</button>
         ))}
       </div>
       <label className="mt-4 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Amount (₦)</label>
-      <input type="number" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="mt-1 w-full rounded-xl border-2 border-rose-100 bg-rose-50/40 px-4 py-3 text-lg font-bold outline-none transition focus:border-primary focus:bg-white focus:shadow-glow" />
+      <input type="number" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="mt-1 w-full rounded-xl border-2 border-border bg-secondary px-4 py-3 text-lg font-bold text-foreground outline-none transition focus:border-primary focus:bg-card focus:shadow-glow" />
       <label className="mt-4 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Payment method</label>
       <div className="mt-2 grid grid-cols-3 gap-2">
         {([["bank", "Bank"], ["card", "Card"], ["wallet", "Wallet"]] as const).map(([v, l]) => (
-          <button key={v} onClick={() => setMethod(v)} className={`rounded-xl py-2 text-xs font-black ${method === v ? "bg-gradient-primary text-white shadow-card" : "bg-rose-50 text-primary"}`}>{l}</button>
+          <button key={v} onClick={() => setMethod(v)} className={`rounded-xl py-2 text-xs font-black ${method === v ? "bg-gradient-primary text-primary-foreground shadow-card" : "bg-secondary text-primary"}`}>{l}</button>
         ))}
       </div>
-      <div className="mt-4 rounded-xl bg-rose-50 p-3 ring-1 ring-rose-100">
+      <div className="mt-4 rounded-xl bg-secondary p-3 ring-1 ring-border">
         <p className="text-[11px] font-bold text-muted-foreground">Or send {symbol} to this address</p>
         <div className="mt-2 flex items-center gap-3">
-          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-white ring-1 ring-rose-200"><QrCode className="h-10 w-10 text-primary" /></div>
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-card ring-1 ring-border"><QrCode className="h-10 w-10 text-primary" /></div>
           <div className="min-w-0 flex-1">
             <p className="break-all font-mono text-[10px] text-foreground">{address}</p>
             <button onClick={() => { navigator.clipboard?.writeText(address); toast.success("Address copied"); }} className="mt-1 inline-flex items-center gap-1 text-[10px] font-black text-primary"><Copy className="h-3 w-3" />Copy address</button>
           </div>
         </div>
       </div>
-      <button disabled={numeric <= 0} onClick={onConfirm} className="btn-shine mt-5 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-white shadow-card disabled:opacity-50">Confirm Deposit</button>
+      <button disabled={numeric <= 0 || submitting} onClick={submit} className="btn-shine mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card disabled:opacity-50">{submitting ? "Processing…" : `Confirm Deposit via ${method === "bank" ? "Bank" : method === "card" ? "Card" : "Wallet"}`}</button>
+      </>
+      )}
     </Sheet>
   );
 }
@@ -322,26 +342,26 @@ function InvestmentSheet({ product, max, onClose, onConfirm }: { product: Invest
   const riskColor = product.risk === "Low" ? "bg-emerald-100 text-emerald-700" : product.risk === "Medium" ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700";
   return (
     <Sheet onClose={onClose}>
-      <h3 className="text-base font-black">{product.name}</h3>
+      <h3 className="text-base font-black text-foreground">{product.name}</h3>
       <p className="mt-1 text-xs text-muted-foreground">{product.note}</p>
       <div className="mt-3 flex items-center gap-2">
         <span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${riskColor}`}><ShieldCheck className="mr-1 inline h-3 w-3" />{product.risk} risk</span>
-        <span className="rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-black text-primary">{product.returns}</span>
+        <span className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-black text-primary">{product.returns}</span>
       </div>
       <label className="mt-4 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Amount (₦) · Available {formatNGN(max)}</label>
-      <input autoFocus type="number" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="mt-1 w-full rounded-xl border-2 border-rose-100 bg-rose-50/40 px-4 py-3 text-lg font-bold outline-none transition focus:border-primary focus:bg-white focus:shadow-glow" />
+      <input autoFocus type="number" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="mt-1 w-full rounded-xl border-2 border-border bg-secondary px-4 py-3 text-lg font-bold text-foreground outline-none transition focus:border-primary focus:bg-card focus:shadow-glow" />
       <label className="mt-4 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Tenor</label>
       <div className="mt-2 grid grid-cols-4 gap-2">
         {[30, 90, 180, 365].map((d) => (
-          <button key={d} onClick={() => setDays(d)} className={`rounded-lg py-2 text-xs font-black ${days === d ? "bg-gradient-primary text-white" : "bg-rose-50 text-primary"}`}>{d}d</button>
+          <button key={d} onClick={() => setDays(d)} className={`rounded-lg py-2 text-xs font-black ${days === d ? "bg-gradient-primary text-primary-foreground" : "bg-secondary text-primary"}`}>{d}d</button>
         ))}
       </div>
-      <div className="mt-4 rounded-xl bg-rose-50 p-3 ring-1 ring-rose-100">
+      <div className="mt-4 rounded-xl bg-secondary p-3 ring-1 ring-border">
         <p className="text-[11px] text-muted-foreground">Expected at maturity</p>
         <p className="text-2xl font-black text-primary">{formatNGN(expected)}</p>
         <p className="text-[10px] text-muted-foreground">Profit {formatNGN(expected - numeric)} · {product.returns}</p>
       </div>
-      <button disabled={!valid} onClick={() => onConfirm(numeric, days)} className="btn-shine mt-5 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-white shadow-card disabled:opacity-50">Confirm Investment</button>
+      <button disabled={!valid} onClick={() => onConfirm(numeric, days)} className="btn-shine mt-5 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card disabled:opacity-50">Confirm Investment</button>
     </Sheet>
   );
 }
