@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { ArrowRightLeft, Copy, X } from "lucide-react";
+import { ArrowRightLeft, Check, Copy, Loader2, X } from "lucide-react";
 import { balancesActions, DOM_ACCOUNTS, DOM_RATES, useBalances, type DomCurrency } from "@/lib/balancesStore";
+import { transactionsActions } from "@/lib/transactionsStore";
 import { formatNGN } from "@/lib/mockData";
 
 const CURRENCIES: DomCurrency[] = ["USD", "GBP", "EUR"];
@@ -84,6 +85,8 @@ function ExchangeSheet({ onClose }: { onClose: () => void }) {
   const [from, setFrom] = useState<Account>("NGN");
   const [to, setTo] = useState<Account>("USD");
   const [amount, setAmount] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+  const [receipt, setReceipt] = useState<{ ref: string; sent: string; received: string; rate: string; newFrom: string; newTo: string } | null>(null);
   const numeric = parseFloat(amount) || 0;
 
   const balanceOf = (a: Account) => (a === "NGN" ? balances.ngn : balances.dom[a]);
@@ -98,18 +101,78 @@ function ExchangeSheet({ onClose }: { onClose: () => void }) {
       ? `${SYMBOLS.NGN}${DOM_RATES[from as DomCurrency].toLocaleString()} / ${SYMBOLS[from]}1`
       : `${(DOM_RATES[from as DomCurrency] / DOM_RATES[to as DomCurrency]).toFixed(4)} ${to} / 1 ${from}`;
 
-  const valid = from !== to && numeric > 0 && numeric <= balanceOf(from);
+  const valid = from !== to && numeric > 0 && numeric <= balanceOf(from) && status === "idle";
 
   const confirm = () => {
-    const out = balancesActions.exchange(from, to, numeric);
-    if (out <= 0) return toast.error("Exchange failed — check balance");
-    toast.success("Exchange complete", { description: `${fmt(from, numeric)} → ${fmt(to, out)}` });
-    onClose();
+    if (!valid) return;
+    setStatus("loading");
+    setTimeout(() => {
+      const out = balancesActions.exchange(from, to, numeric);
+      if (out <= 0) {
+        setStatus("idle");
+        return toast.error("Exchange failed — check balance");
+      }
+      const ref = `EX-${Date.now().toString().slice(-8)}`;
+      const sentLabel = fmt(from, numeric);
+      const recvLabel = fmt(to, out);
+      transactionsActions.add({
+        title: `Exchange: ${sentLabel} → ${recvLabel}`,
+        category: "Exchange",
+        amount: 0,
+        icon: "🔁",
+      });
+      // Read fresh balances after mutation
+      const newFrom = from === "NGN" ? balancesActions /* placeholder */ : null; // not used
+      void newFrom;
+      setReceipt({
+        ref,
+        sent: sentLabel,
+        received: recvLabel,
+        rate: rateLabel,
+        newFrom: fmt(from, from === "NGN" ? balanceOf("NGN") - numeric : balanceOf(from) - numeric),
+        newTo: fmt(to, to === "NGN" ? balanceOf("NGN") + out : balanceOf(to) + out),
+      });
+      setStatus("success");
+      toast.success("Exchange complete", { description: `${sentLabel} → ${recvLabel}` });
+    }, 900);
   };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm">
       <motion.div initial={{ y: 300 }} animate={{ y: 0 }} exit={{ y: 300 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-t-3xl bg-card p-5 text-foreground shadow-2xl ring-1 ring-border">
+        {status === "success" && receipt ? (
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-primary">Receipt</p>
+                <h3 className="text-lg font-black">Exchange Complete</h3>
+              </div>
+              <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-card">
+              <Check className="h-8 w-8" />
+            </div>
+            <div className="space-y-2 rounded-xl bg-secondary p-4 ring-1 ring-border">
+              <Row label="Reference" value={receipt.ref} mono />
+              <Row label="Sent" value={receipt.sent} />
+              <Row label="Received" value={receipt.received} />
+              <Row label="Rate" value={receipt.rate} mono />
+              <Row label="Status" value="Completed" />
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-secondary p-3 ring-1 ring-border">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">New {from}</p>
+                <p className="text-sm font-black">{receipt.newFrom}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">New {to}</p>
+                <p className="text-sm font-black">{receipt.newTo}</p>
+              </div>
+            </div>
+            <button onClick={onClose} className="btn-shine mt-5 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card">Done</button>
+          </div>
+        ) : (
+        <>
         <div className="mb-4 flex items-center justify-between">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-primary">FX</p>
@@ -142,8 +205,21 @@ function ExchangeSheet({ onClose }: { onClose: () => void }) {
           <p className="text-2xl font-black text-primary">{fmt(to, received)}</p>
         </div>
 
-        <button disabled={!valid} onClick={confirm} className="btn-shine mt-5 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card disabled:opacity-50">Confirm Exchange</button>
+        <button disabled={!valid} onClick={confirm} className="btn-shine mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card disabled:opacity-50">
+          {status === "loading" ? (<><Loader2 className="h-4 w-4 animate-spin" /> Processing…</>) : "Confirm Exchange"}
+        </button>
+        </>
+        )}
       </motion.div>
     </motion.div>
+  );
+}
+
+function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="flex items-center justify-between text-[12px]">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={`font-black text-foreground ${mono ? "font-mono" : ""}`}>{value}</span>
+    </div>
   );
 }
