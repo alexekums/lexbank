@@ -1,9 +1,25 @@
 import { useSyncExternalStore } from "react";
 import { mockBalances, mockCrypto, mockPositions, type CryptoHolding, type OpenPosition } from "@/lib/mockData";
 
+export type DomCurrency = "USD" | "GBP" | "EUR";
+
+export const DOM_ACCOUNTS: Record<DomCurrency, { number: string; bank: string; swift: string }> = {
+  USD: { number: "8021045210", bank: "LexBank Domiciliary", swift: "LEXBNGLA" },
+  GBP: { number: "8021045220", bank: "LexBank Domiciliary", swift: "LEXBGB22" },
+  EUR: { number: "8021045230", bank: "LexBank Domiciliary", swift: "LEXBDEFF" },
+};
+
+// NGN per 1 unit foreign currency (mock realistic rates)
+export const DOM_RATES: Record<DomCurrency, number> = {
+  USD: 1650,
+  GBP: 2080,
+  EUR: 1780,
+};
+
 type State = {
   ngn: number;
   usd: number;
+  dom: Record<DomCurrency, number>;
   tradingNgn: number;
   crypto: CryptoHolding[];
   positions: OpenPosition[];
@@ -13,6 +29,7 @@ type State = {
 let state: State = {
   ngn: mockBalances.ngn,
   usd: mockBalances.usd,
+  dom: { USD: 1240.55, GBP: 480.2, EUR: 612.9 },
   tradingNgn: mockBalances.tradingNgn,
   crypto: mockCrypto.map((c) => ({ ...c })),
   positions: mockPositions.map((p) => ({ ...p })),
@@ -33,6 +50,28 @@ export const balancesActions = {
   addNgn(delta: number) {
     state = { ...state, ngn: Math.max(0, state.ngn + delta) };
     emit();
+  },
+  addDom(currency: DomCurrency, delta: number) {
+    state = { ...state, dom: { ...state.dom, [currency]: Math.max(0, state.dom[currency] + delta) } };
+    emit();
+  },
+  exchange(from: "NGN" | DomCurrency, to: "NGN" | DomCurrency, amount: number) {
+    if (from === to || amount <= 0) return 0;
+    // Convert "from" amount into NGN first, then NGN into "to"
+    const fromNgn = from === "NGN" ? amount : amount * DOM_RATES[from];
+    if (from === "NGN") {
+      if (state.ngn < amount) return 0;
+    } else {
+      if (state.dom[from] < amount) return 0;
+    }
+    const toAmount = to === "NGN" ? fromNgn : fromNgn / DOM_RATES[to];
+    const nextDom = { ...state.dom };
+    let nextNgn = state.ngn;
+    if (from === "NGN") nextNgn -= amount; else nextDom[from] -= amount;
+    if (to === "NGN") nextNgn += toAmount; else nextDom[to] += toAmount;
+    state = { ...state, ngn: nextNgn, dom: nextDom };
+    emit();
+    return toAmount;
   },
   moveToTrading(amount: number) {
     const value = Math.min(Math.max(0, amount), state.ngn);
