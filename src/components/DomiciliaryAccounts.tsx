@@ -121,9 +121,6 @@ function ExchangeSheet({ onClose }: { onClose: () => void }) {
         amount: 0,
         icon: "🔁",
       });
-      // Read fresh balances after mutation
-      const newFrom = from === "NGN" ? balancesActions /* placeholder */ : null; // not used
-      void newFrom;
       setReceipt({
         ref,
         sent: sentLabel,
