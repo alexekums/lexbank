@@ -132,7 +132,9 @@ function HomePage() {
           <motion.p key={String(show)} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-1 text-4xl font-black tracking-tight">
             {show ? formatNGN(balances.ngn) : "₦••••••"}
           </motion.p>
-          <p className="mt-1 text-xs text-white/80">Account •• 4521 · Tap to copy</p>
+          <button onClick={() => { navigator.clipboard?.writeText("8021034521"); toast.success("Account number copied", { description: "8021034521" }); }} className="mt-1 inline-flex items-center gap-1 text-xs text-white/80 hover:text-white">
+            <Copy className="h-3 w-3" /> Account 8021034521 · Tap to copy
+          </button>
         </div>
 
         <div className="mt-6 grid grid-cols-5 gap-2">
