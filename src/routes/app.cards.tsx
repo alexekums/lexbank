@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
-import { CreditCard, Globe2, Lock, MapPin, Phone, Plus, ShieldCheck, Snowflake, Sparkles, WalletCards } from "lucide-react";
+import { CreditCard, Globe2, Lock, MapPin, Phone, Plus, ShieldCheck, Snowflake, Sparkles, Store, Wallet, WalletCards, Wifi } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { formatNGN } from "@/lib/mockData";
@@ -20,6 +20,9 @@ type VirtualCard = {
   frozen: boolean;
   spendingLimit: number;
   internationalBlocked: boolean;
+  posEnabled: boolean;
+  webEnabled: boolean;
+  atmEnabled: boolean;
 };
 
 const starterCards: VirtualCard[] = [
@@ -32,6 +35,9 @@ const starterCards: VirtualCard[] = [
     frozen: false,
     spendingLimit: 250000,
     internationalBlocked: true,
+    posEnabled: true,
+    webEnabled: true,
+    atmEnabled: true,
     history: [
       { id: "h1", title: "Netflix", amount: -6500, date: "Today" },
       { id: "h2", title: "Card top up", amount: 50000, date: "Yesterday" },
@@ -64,6 +70,9 @@ function CardsPage() {
       frozen: false,
       spendingLimit: amount,
       internationalBlocked: true,
+      posEnabled: true,
+      webEnabled: true,
+      atmEnabled: true,
       history: [{ id: `h_${Date.now()}`, title: "Initial funding", amount, date: "Just now" }],
     };
     setCards((prev) => [card, ...prev]);
@@ -130,6 +139,12 @@ function CardsPage() {
             <div className="grid grid-cols-2 gap-2">
               <button onClick={() => { updateActiveCard({ frozen: !active.frozen }); toast.success(active.frozen ? "Card unfrozen" : "Card frozen"); }} className="rounded-xl bg-secondary p-3 text-left text-xs font-black ring-1 ring-border"><Snowflake className="mb-2 h-4 w-4 text-primary" />{active.frozen ? "Unfreeze card" : "Freeze card"}<p className="mt-1 font-medium text-muted-foreground">{active.frozen ? "Card is paused" : "Pause instantly"}</p></button>
               <button onClick={() => { updateActiveCard({ internationalBlocked: !active.internationalBlocked }); toast.success(active.internationalBlocked ? "International enabled" : "International blocked"); }} className="rounded-xl bg-secondary p-3 text-left text-xs font-black ring-1 ring-border"><Globe2 className="mb-2 h-4 w-4 text-primary" />International<p className="mt-1 font-medium text-muted-foreground">{active.internationalBlocked ? "Blocked" : "Allowed"}</p></button>
+            </div>
+            <div className="mt-3 space-y-2">
+              <ChannelToggle icon={Store} label="POS transactions" hint="Pay at point-of-sale terminals" on={active.posEnabled} onChange={(v) => { updateActiveCard({ posEnabled: v }); toast.success(`POS ${v ? "enabled" : "disabled"}`); }} />
+              <ChannelToggle icon={Wifi} label="Web / Online transactions" hint="E-commerce & online payments" on={active.webEnabled} onChange={(v) => { updateActiveCard({ webEnabled: v }); toast.success(`Online ${v ? "enabled" : "disabled"}`); }} />
+              <ChannelToggle icon={Globe2} label="International transactions" hint="Use card outside Nigeria" on={!active.internationalBlocked} onChange={(v) => { updateActiveCard({ internationalBlocked: !v }); toast.success(`International ${v ? "enabled" : "blocked"}`); }} />
+              <ChannelToggle icon={Wallet} label="ATM withdrawals" hint="Cash withdrawals at ATMs" on={active.atmEnabled} onChange={(v) => { updateActiveCard({ atmEnabled: v }); toast.success(`ATM ${v ? "enabled" : "disabled"}`); }} />
             </div>
             <form onSubmit={(e) => { e.preventDefault(); const next = Number(limit); if (next < 1000) return toast.error("Enter a valid limit"); updateActiveCard({ spendingLimit: next }); toast.success("Spending limit updated"); }} className="mt-3 flex gap-2">
               <div className="float-field flex-1"><input value={limit} onChange={(e) => setLimit(e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder=" " /><label>Spending limit</label></div>
@@ -198,5 +213,20 @@ function CardsPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+function ChannelToggle({ icon: Icon, label, hint, on, onChange }: { icon: React.ComponentType<{ className?: string }>; label: string; hint: string; on: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button type="button" onClick={() => onChange(!on)} className="flex w-full items-center gap-3 rounded-xl bg-secondary p-3 text-left ring-1 ring-border transition active:scale-[0.99]">
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-card text-primary ring-1 ring-border"><Icon className="h-4 w-4" /></span>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-black text-foreground">{label}</p>
+        <p className="text-[10px] text-muted-foreground">{hint}</p>
+      </div>
+      <span className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition ${on ? "bg-gradient-primary" : "bg-border"}`}>
+        <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${on ? "translate-x-5" : "translate-x-0.5"}`} />
+      </span>
+    </button>
   );
 }
