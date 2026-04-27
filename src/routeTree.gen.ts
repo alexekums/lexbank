@@ -20,6 +20,7 @@ import { Route as AppInsuranceRouteImport } from './routes/app.insurance'
 import { Route as AppHomeRouteImport } from './routes/app.home'
 import { Route as AppCardsRouteImport } from './routes/app.cards'
 import { Route as AppAiRouteImport } from './routes/app.ai'
+import { Route as AppWalletCurrencyRouteImport } from './routes/app.wallet.$currency'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -76,6 +77,11 @@ const AppAiRoute = AppAiRouteImport.update({
   path: '/ai',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWalletCurrencyRoute = AppWalletCurrencyRouteImport.update({
+  id: '/wallet/$currency',
+  path: '/wallet/$currency',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/app/more': typeof AppMoreRoute
   '/app/savings': typeof AppSavingsRoute
   '/app/transfers': typeof AppTransfersRoute
+  '/app/wallet/$currency': typeof AppWalletCurrencyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/app/more': typeof AppMoreRoute
   '/app/savings': typeof AppSavingsRoute
   '/app/transfers': typeof AppTransfersRoute
+  '/app/wallet/$currency': typeof AppWalletCurrencyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/app/more': typeof AppMoreRoute
   '/app/savings': typeof AppSavingsRoute
   '/app/transfers': typeof AppTransfersRoute
+  '/app/wallet/$currency': typeof AppWalletCurrencyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/app/more'
     | '/app/savings'
     | '/app/transfers'
+    | '/app/wallet/$currency'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
     | '/app/more'
     | '/app/savings'
     | '/app/transfers'
+    | '/app/wallet/$currency'
   id:
     | '__root__'
     | '/'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/app/more'
     | '/app/savings'
     | '/app/transfers'
+    | '/app/wallet/$currency'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -244,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAiRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/wallet/$currency': {
+      id: '/app/wallet/$currency'
+      path: '/wallet/$currency'
+      fullPath: '/app/wallet/$currency'
+      preLoaderRoute: typeof AppWalletCurrencyRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -256,6 +275,7 @@ interface AppRouteChildren {
   AppMoreRoute: typeof AppMoreRoute
   AppSavingsRoute: typeof AppSavingsRoute
   AppTransfersRoute: typeof AppTransfersRoute
+  AppWalletCurrencyRoute: typeof AppWalletCurrencyRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -267,6 +287,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMoreRoute: AppMoreRoute,
   AppSavingsRoute: AppSavingsRoute,
   AppTransfersRoute: AppTransfersRoute,
+  AppWalletCurrencyRoute: AppWalletCurrencyRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

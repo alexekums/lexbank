@@ -25,14 +25,13 @@ import {
 } from "lucide-react";
 import { formatNGN, formatUSD, initialForex, USD_NGN_RATE, type ForexPair } from "@/lib/mockData";
 import { balancesActions, useBalances } from "@/lib/balancesStore";
-import { DomiciliaryAccounts } from "@/components/DomiciliaryAccounts";
 
 export const Route = createFileRoute("/app/lextx")({
   head: () => ({ meta: [{ title: "LexTX — Trading & Crypto" }] }),
   component: LexTXPage,
 });
 
-type Tab = "crypto" | "forex" | "open" | "closed";
+type Tab = "crypto" | "forex" | "investments" | "open" | "closed";
 type TradeTicket = { pair: ForexPair; side: "BUY" | "SELL" };
 type InvestmentProduct = { name: string; returns: string; note: string; rate: number; risk: "Low" | "Medium" | "High" };
 
@@ -145,6 +144,7 @@ function LexTXPage() {
           {([
             ["crypto", "Crypto"],
             ["forex", "Forex"],
+            ["investments", "Investments"],
             ["open", "Open Positions"],
             ["closed", "Closed Positions"],
           ] as const).map(([value, label]) => (
@@ -162,17 +162,14 @@ function LexTXPage() {
       <main className="px-5 pt-3">
         {tab === "crypto" && <CryptoPanel cryptoTotalUsd={cryptoTotalUsd} onConvert={() => setConvertOpen(true)} />}
         {tab === "forex" && <ForexPanel pairs={pairs} onPair={setSelectedPair} onTrade={(pair, side) => setTradeTicket({ pair, side })} />}
+        {tab === "investments" && <InvestmentsPanel onInvest={setInvesting} />}
         {tab === "open" && <PositionsPanel positions={balances.positions} empty="No open trades yet." onClose={handleClosePosition} />}
         {tab === "closed" && <PositionsPanel positions={balances.closedPositions} empty="Closed trades will appear here." closed />}
-        <div className="mt-5 -mx-5">
-          <DomiciliaryAccounts variant="dark" />
-        </div>
         <div className="mt-5 rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/10">
           <p className="text-[11px] uppercase tracking-wider text-white/50">Open P&L</p>
           <p className={`mt-1 text-xl font-black ${openPnlNgn >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{openPnlNgn >= 0 ? "+" : ""}{formatNGN(openPnlNgn)}</p>
           <p className="mt-1 text-xs text-white/50">Profits settle into Trading Balance when positions close.</p>
         </div>
-        <InvestmentsPanel onInvest={setInvesting} />
       </main>
 
       <AnimatePresence>{convertOpen && <ConvertSheet holdings={balances.crypto} onClose={() => setConvertOpen(false)} onConfirm={handleConvert} />}</AnimatePresence>
@@ -227,7 +224,28 @@ function ConvertSheet({ holdings, onClose, onConfirm }: { holdings: ReturnType<t
   const numeric = parseFloat(amount) || 0;
   const valid = holding && numeric > 0 && numeric <= holding.amount;
   const ngn = holding ? numeric * holding.priceUsd * USD_NGN_RATE : 0;
-  return <Sheet onClose={onClose}><h3 className="text-base font-black text-foreground">Convert to Naira</h3><p className="mt-1 text-xs text-muted-foreground">Choose crypto and enter the amount to convert.</p><div className="mt-4 grid grid-cols-3 gap-2">{holdings.map((c) => <button key={c.symbol} onClick={() => setSymbol(c.symbol)} className={`rounded-xl py-2 text-xs font-black ${symbol === c.symbol ? "bg-gradient-primary text-primary-foreground shadow-card" : "bg-secondary text-primary"}`}>{c.symbol}</button>)}</div><label className="mt-4 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Amount in {symbol}</label><input autoFocus type="number" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="mt-1 w-full rounded-xl border-2 border-border bg-secondary px-4 py-3 text-lg font-bold text-foreground outline-none transition focus:border-primary focus:bg-card focus:shadow-glow" /><p className="mt-2 text-xs text-muted-foreground">Available: {holding?.amount.toFixed(symbol === "USDT" ? 2 : 4)} {symbol}</p><div className="mt-4 rounded-xl bg-secondary p-3 ring-1 ring-border"><p className="text-[11px] text-muted-foreground">You receive</p><p className="text-2xl font-black text-primary">{formatNGN(ngn)}</p></div><button disabled={!valid} onClick={() => onConfirm(symbol, numeric)} className="btn-shine mt-5 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card disabled:opacity-50">Convert to Naira</button></Sheet>;
+  return (
+    <Sheet onClose={onClose}>
+      <h3 className="text-base font-black text-foreground">Convert to Naira</h3>
+      <p className="mt-1 text-xs text-muted-foreground">Choose crypto and enter the amount to convert.</p>
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        {holdings.map((c) => (
+          <button key={c.symbol} onClick={() => { setSymbol(c.symbol); setAmount(""); }} className={`rounded-xl py-2 text-xs font-black ${symbol === c.symbol ? "bg-gradient-primary text-primary-foreground shadow-card" : "bg-secondary text-primary"}`}>{c.symbol}</button>
+        ))}
+      </div>
+      <div className="mt-4 flex items-center justify-between">
+        <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Amount in {symbol}</label>
+        <button type="button" onClick={() => holding && setAmount(String(holding.amount))} className="rounded-lg bg-gradient-primary px-2.5 py-1 text-[10px] font-black text-primary-foreground shadow-card">All</button>
+      </div>
+      <input autoFocus type="number" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="mt-1 w-full rounded-xl border-2 border-border bg-secondary px-4 py-3 text-lg font-bold text-foreground outline-none transition focus:border-primary focus:bg-card focus:shadow-glow" />
+      <p className="mt-2 text-xs text-muted-foreground">Available: {holding?.amount.toFixed(symbol === "USDT" ? 2 : 4)} {symbol}</p>
+      <div className="mt-4 rounded-xl bg-secondary p-3 ring-1 ring-border">
+        <p className="text-[11px] text-muted-foreground">You receive</p>
+        <p className="text-2xl font-black text-primary">{formatNGN(ngn)}</p>
+      </div>
+      <button disabled={!valid} onClick={() => onConfirm(symbol, numeric)} className="btn-shine mt-5 h-12 w-full rounded-xl bg-gradient-primary text-sm font-black text-primary-foreground shadow-card disabled:opacity-50">Convert to Naira</button>
+    </Sheet>
+  );
 }
 
 function FundsSheet({ mode, max, onClose, onConfirm }: { mode: "fund" | "withdraw"; max: number; onClose: () => void; onConfirm: (amount: number) => void }) {

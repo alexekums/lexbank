@@ -78,9 +78,9 @@ export const mockPositions: OpenPosition[] = [
 ];
 
 export const mockBalances = {
-  ngn: 1284530.75,
-  usd: 1840.22,
-  tradingNgn: 250000,
+  ngn: 248750320.45,
+  usd: 18402.22,
+  tradingNgn: 1340820500,
   cryptoUsd: 0.0421 * 67890 + 0.812 * 3520 + 1240.5,
   tradingPnl: 20955,
 };
