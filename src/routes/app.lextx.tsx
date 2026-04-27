@@ -25,14 +25,13 @@ import {
 } from "lucide-react";
 import { formatNGN, formatUSD, initialForex, USD_NGN_RATE, type ForexPair } from "@/lib/mockData";
 import { balancesActions, useBalances } from "@/lib/balancesStore";
-import { DomiciliaryAccounts } from "@/components/DomiciliaryAccounts";
 
 export const Route = createFileRoute("/app/lextx")({
   head: () => ({ meta: [{ title: "LexTX — Trading & Crypto" }] }),
   component: LexTXPage,
 });
 
-type Tab = "crypto" | "forex" | "open" | "closed";
+type Tab = "crypto" | "forex" | "investments" | "open" | "closed";
 type TradeTicket = { pair: ForexPair; side: "BUY" | "SELL" };
 type InvestmentProduct = { name: string; returns: string; note: string; rate: number; risk: "Low" | "Medium" | "High" };
 
@@ -145,6 +144,7 @@ function LexTXPage() {
           {([
             ["crypto", "Crypto"],
             ["forex", "Forex"],
+            ["investments", "Investments"],
             ["open", "Open Positions"],
             ["closed", "Closed Positions"],
           ] as const).map(([value, label]) => (
@@ -162,17 +162,14 @@ function LexTXPage() {
       <main className="px-5 pt-3">
         {tab === "crypto" && <CryptoPanel cryptoTotalUsd={cryptoTotalUsd} onConvert={() => setConvertOpen(true)} />}
         {tab === "forex" && <ForexPanel pairs={pairs} onPair={setSelectedPair} onTrade={(pair, side) => setTradeTicket({ pair, side })} />}
+        {tab === "investments" && <InvestmentsPanel onInvest={setInvesting} />}
         {tab === "open" && <PositionsPanel positions={balances.positions} empty="No open trades yet." onClose={handleClosePosition} />}
         {tab === "closed" && <PositionsPanel positions={balances.closedPositions} empty="Closed trades will appear here." closed />}
-        <div className="mt-5 -mx-5">
-          <DomiciliaryAccounts variant="dark" />
-        </div>
         <div className="mt-5 rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/10">
           <p className="text-[11px] uppercase tracking-wider text-white/50">Open P&L</p>
           <p className={`mt-1 text-xl font-black ${openPnlNgn >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{openPnlNgn >= 0 ? "+" : ""}{formatNGN(openPnlNgn)}</p>
           <p className="mt-1 text-xs text-white/50">Profits settle into Trading Balance when positions close.</p>
         </div>
-        <InvestmentsPanel onInvest={setInvesting} />
       </main>
 
       <AnimatePresence>{convertOpen && <ConvertSheet holdings={balances.crypto} onClose={() => setConvertOpen(false)} onConfirm={handleConvert} />}</AnimatePresence>
