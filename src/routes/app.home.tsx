@@ -1,14 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownLeft, ArrowLeft, ArrowUpRight, Bell, Car, Clapperboard, Copy, Eye, EyeOff, Gamepad2, Gift, HeartPulse, IdCard, Loader2, PiggyBank, Plane, Plus, Receipt, Smartphone, Target, Trash2, Tv, Wifi, X, Zap } from "lucide-react";
+import { ArrowDownLeft, ArrowLeft, ArrowUpRight, Bell, Car, ChevronDown, Clapperboard, Copy, Eye, EyeOff, Gamepad2, Gift, HeartPulse, IdCard, Loader2, PiggyBank, Plane, Plus, Receipt, Smartphone, Target, Trash2, Tv, Wifi, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { formatNGN, formatUSD } from "@/lib/mockData";
-import { balancesActions, useBalances } from "@/lib/balancesStore";
+import { balancesActions, DOM_RATES, useBalances, type DomCurrency } from "@/lib/balancesStore";
 import { transactionsActions, useTransactions } from "@/lib/transactionsStore";
 import { useSavings } from "@/lib/savingsStore";
-import { DomiciliaryAccounts } from "@/components/DomiciliaryAccounts";
 
 export const Route = createFileRoute("/app/home")({
   head: () => ({ meta: [{ title: "Home — LexBank" }] }),
@@ -81,6 +80,7 @@ function HomePage() {
   const [showAll, setShowAll] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [savingsOpen, setSavingsOpen] = useState(false);
+  const [currencyPickerOpen, setCurrencyPickerOpen] = useState(false);
   const balances = useBalances();
   const transactions = useTransactions();
   const cryptoUsd = balances.crypto.reduce((s, c) => s + c.amount * c.priceUsd, 0);
@@ -129,11 +129,16 @@ function HomePage() {
 
         <div className="mt-7">
           <p className="text-xs uppercase tracking-widest text-white/70">Naira balance</p>
-          <motion.p key={String(show)} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-1 text-4xl font-black tracking-tight">
-            {show ? formatNGN(balances.ngn) : "₦••••••"}
-          </motion.p>
-          <button onClick={() => { navigator.clipboard?.writeText("8021034521"); toast.success("Account number copied", { description: "8021034521" }); }} className="mt-1 inline-flex items-center gap-1 text-xs text-white/80 hover:text-white">
-            <Copy className="h-3 w-3" /> Account 8021034521 · Tap to copy
+          <button onClick={() => setCurrencyPickerOpen(true)} className="mt-1 flex items-center gap-2 text-left">
+            <motion.p key={String(show)} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="text-4xl font-black tracking-tight">
+              {show ? formatNGN(balances.ngn) : "₦••••••"}
+            </motion.p>
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/30">
+              <ChevronDown className="h-4 w-4" />
+            </span>
+          </button>
+          <button onClick={() => { navigator.clipboard?.writeText("1001284530"); toast.success("Account number copied", { description: "1001284530" }); }} className="mt-1 inline-flex items-center gap-1 text-xs text-white/80 hover:text-white">
+            <Copy className="h-3 w-3" /> Account 1001284530 · Tap to copy
           </button>
         </div>
 
@@ -160,10 +165,6 @@ function HomePage() {
           <MiniCard label="P&L" value={show ? formatNGN(tradingPnlNgn) : "₦••••"} accent="from-primary to-primary-glow" positive={tradingPnlNgn >= 0} />
         </div>
       </section>
-
-      <div className="mt-6">
-        <DomiciliaryAccounts />
-      </div>
 
       <section className="mt-6 px-5">
         <h2 className="mb-3 text-sm font-bold tracking-tight">Quick services</h2>
@@ -241,7 +242,56 @@ function HomePage() {
       <AnimatePresence>{moreOpen && <MoreServicesSheet onClose={() => setMoreOpen(false)} onPick={(next: Flow) => { setMoreOpen(false); setFlow(next); }} />}</AnimatePresence>
       <AnimatePresence>{flow && <ActionSheet flow={flow} balance={balances.ngn} onClose={() => setFlow(null)} />}</AnimatePresence>
       <AnimatePresence>{savingsOpen && <SavingsPanel onClose={() => setSavingsOpen(false)} />}</AnimatePresence>
+      <AnimatePresence>
+        {currencyPickerOpen && (
+          <CurrencyPickerSheet
+            ngn={balances.ngn}
+            dom={balances.dom}
+            onClose={() => setCurrencyPickerOpen(false)}
+            onPick={(code) => {
+              setCurrencyPickerOpen(false);
+              navigate({ to: "/app/wallet/$currency", params: { currency: code.toLowerCase() } });
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function CurrencyPickerSheet({ ngn, dom, onClose, onPick }: { ngn: number; dom: Record<DomCurrency, number>; onClose: () => void; onPick: (code: "NGN" | DomCurrency) => void }) {
+  const items: { code: "NGN" | DomCurrency; flag: string; label: string; sub: string; balance: string }[] = [
+    { code: "NGN", flag: "🇳🇬", label: "Naira", sub: "LexBank · Spend", balance: formatNGN(ngn) },
+    { code: "USD", flag: "🇺🇸", label: "US Dollar", sub: `≈ ${formatNGN(dom.USD * DOM_RATES.USD)}`, balance: `$${dom.USD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
+    { code: "GBP", flag: "🇬🇧", label: "British Pound", sub: `≈ ${formatNGN(dom.GBP * DOM_RATES.GBP)}`, balance: `£${dom.GBP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
+    { code: "EUR", flag: "🇪🇺", label: "Euro", sub: `≈ ${formatNGN(dom.EUR * DOM_RATES.EUR)}`, balance: `€${dom.EUR.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
+  ];
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/45 px-4 pb-4">
+      <motion.div initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 80 }} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-card p-5 shadow-card ring-1 ring-border">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-primary">Wallets</p>
+            <h3 className="text-lg font-black">Switch currency</h3>
+          </div>
+          <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+        </div>
+        <ul className="space-y-2">
+          {items.map((it) => (
+            <li key={it.code}>
+              <button onClick={() => onPick(it.code)} className="flex w-full items-center gap-3 rounded-2xl bg-secondary p-3 text-left ring-1 ring-border transition active:scale-[0.98]">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-card text-2xl ring-1 ring-border">{it.flag}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-black text-foreground">{it.label}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">{it.sub}</p>
+                </div>
+                <p className="text-sm font-black text-foreground">{it.balance}</p>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </motion.div>
+    </motion.div>
   );
 }
 
