@@ -1,5 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { Home, LineChart, MessageCircle, ArrowLeftRight, MoreHorizontal, CreditCard, Minus } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ function AppShell() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [aiMinimized, setAiMinimized] = useState(false);
+  const dragRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -31,11 +33,18 @@ function AppShell() {
   const showAiButton = pathname !== "/app/ai";
 
   return (
-    <div className="min-h-screen bg-background pb-24 dark:bg-background">
+    <div ref={dragRef} className="relative min-h-screen bg-background pb-24 dark:bg-background">
       <Outlet />
 
       {showAiButton && (
-        <div className="fixed bottom-24 right-[max(0.75rem,calc((100vw-28rem)/2+0.75rem))] z-40 flex items-center gap-2">
+        <motion.div
+          drag
+          dragConstraints={dragRef}
+          dragElastic={0.15}
+          dragMomentum={false}
+          className="fixed bottom-24 right-3 z-40 flex cursor-grab items-center gap-2 active:cursor-grabbing"
+          whileDrag={{ scale: 1.05 }}
+        >
           {!aiMinimized && (
             <button
               type="button"
@@ -49,15 +58,16 @@ function AppShell() {
           <Link
             to="/app/ai"
             aria-label="Open Lexi AI chat"
+            draggable={false}
             className={cn(
-              "flex items-center justify-center bg-gradient-primary text-primary-foreground shadow-[0_12px_32px_-8px_color-mix(in_oklab,var(--primary)_70%,transparent)] ring-1 ring-white/40 transition active:scale-95",
-              aiMinimized ? "h-10 w-10 rounded-full text-xs font-black" : "h-14 gap-2 rounded-full px-4 text-sm font-black",
+              "flex select-none items-center justify-center bg-gradient-primary text-primary-foreground shadow-[0_12px_32px_-8px_color-mix(in_oklab,var(--primary)_70%,transparent)] ring-1 ring-white/40 transition active:scale-95",
+              aiMinimized ? "h-12 w-12 rounded-full text-xs font-black" : "h-14 gap-2 rounded-full px-4 text-sm font-black",
             )}
             onClick={() => setAiMinimized(true)}
           >
             {aiMinimized ? "AI" : <><MessageCircle className="h-5 w-5" /> Lexi</>}
           </Link>
-        </div>
+        </motion.div>
       )}
 
       <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md px-3 pb-3">
